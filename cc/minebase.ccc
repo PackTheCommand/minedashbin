@@ -1,0 +1,45 @@
+[
+  {
+    "kww":"place",
+
+    "syntax":"setblock %s %s %s %s",
+
+    "interface":"Nothing"
+
+  },
+
+  {
+    "kww":"run",
+
+    "syntax":"schedule function <<prName>>:%s 1s",
+
+    "interface":"Nothing"
+
+  },
+  {
+    "kww":"printst",
+
+    "syntax":"say %s",
+
+    "interface":"Nothing"
+
+  },
+  {
+    "kww":"spawn",
+
+    "syntax":"say %s",
+
+    "interface":"Nothing"
+
+  },
+  {
+    "kww":"nbtset",
+
+    "syntax":"say %s",
+
+    "interface":"Nothing"
+
+  }
+
+
+]

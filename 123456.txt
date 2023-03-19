@@ -1,0 +1,13 @@
+templates/baselib/['pointer/pointer'].mdblib
+include pointer/pointer
+cc mine
+func empty(){place 12 12 12 "minecraft:grass"
+}func diskpart(name){}p= 12
+c=12
+d= p
+myfunc(1,1,1,1)
+tls(1,1,1,1)
+func tls(new,parser,privat,nuller){print "it worked: "
+}func myfunc(new,parser,privat,nuller){}native pointer/pointer
+ttu
+func movePointer(x,y,z){}
