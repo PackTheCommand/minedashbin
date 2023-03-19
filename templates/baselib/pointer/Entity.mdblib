@@ -1,0 +1,12 @@
+
+
+
+shr SpawnEntity "minecraft:marker";
+
+shr spawnEntity_Scoreboard "_mdb_spawn";
+shr spawnEntity_X "_mdb_x";
+shr spawnEntity_Y "_mdb_x";
+shr spawnEntity_Z "_mdb_x";
+
+
+func spawn(x,y,z)

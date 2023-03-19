@@ -1,0 +1,9 @@
+native pointer/pointer;
+native pointer/spawn_pointer;
+native pointer/tppointer;
+run spawn_pointer;
+
+func movePointer(x,y,z){
+  run tppointer;
+
+}
