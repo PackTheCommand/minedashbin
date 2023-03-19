@@ -1,0 +1,16 @@
+----main-----
+ I..I schedule function test:spawn_pointer 1s
+----this.empty-----
+ I..I setblock 12  12  12  minecraft:grass
+----this.diskpart-----
+ @v-l .p $= .12 num
+ @inj "tesl ais best"
+ @v-l .c $= .12 num
+ @v-l .d $= .p obj
+ @fc this.myfunc 4  1,1,1,1 
+ @fc this.tls 4  1,1,1,1 
+----this.tls-----
+ I..I say "test"
+----this.myfunc-----
+----this.movePointer-----
+ I..I schedule function test:tppointer 1s
