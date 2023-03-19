@@ -1,5 +1,5 @@
 
-# **<p align="center" style="font-size:50px">  Mc-DashBin</p>**
+# **<p align="center" style="font-size:50px">  mineDashBin</p>**
 
 
 
