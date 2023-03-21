@@ -6,21 +6,40 @@ class Settings:
         self.path = path
         try:
             with open(path, "r") as f:
-
-                self.settings = json.load(f)[0]
+                jl=json.load(f)
+                if len(jl)==0:
+                    raise FileNotFoundError
+                self.settings = jl[0]
+                if self.settings=={}or self.settings==None:
+                    raise FileNotFoundError
         except FileNotFoundError:
             print("No setting.json found using default settings")
-            self.settings = {"mode": "dark",}
+            self.settings = {"All-Projects":{},"Current-Project":None,"pr_ids":[]}
+            self.save()
             self.save()
 
-        self.defuldOptions={"mode": "dark","noInfoText":False,"devMode":False,"$638382%Cheats":False}
+        self.defuldOptions={}
 
 
 
     def save(self):
         with open(self.path, "w") as f:
             json.dump([self.settings], f)
+    def addToExistingSetting(self,key,value):
+        try:
+            self.settings[key] +=value
+            return True
+        except Exception:
+            pass
+        return False
 
+    def removeFromExistingSetting(self,key,value):
+        try:
+            self.settings[key].remove(value)
+            return True
+        except Exception:
+            pass
+        return False
     def get(self, key):
         try:
             return self.settings[key]
@@ -29,6 +48,7 @@ class Settings:
                 return self.defuldOptions[key]
             except KeyError:
                 pass
+                print(self.settings)
                 print("Unknown Seting",key)
                 return None
 

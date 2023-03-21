@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import re
 import shutil
 import time
@@ -7,8 +8,43 @@ import time
 import setings
 
 import templade, exeptions_
+
+
+from sys import argv
 Seti= setings.Settings("settings.json")
-projectName = "test"
+def create_project():
+    name=input("Project Name: ")
+    sourcefile=input("Main file: ")
+
+    print("Project Name: "+name+" ,Source File: "+sourcefile)
+    yn=input("Create project? (y/n)")
+    if yn=="y":
+
+        r=random.randint(1,9999999)
+        while str(r) in Seti.get("pr_ids"):
+            r = random.randint(1, 9999999)
+
+        print("creating files")
+        Seti.get("All-Projects")[r]={"name": name, "source": sourcefile}
+
+        yn = input("Set as Current Project ? (y/n)")
+        if yn == "y":
+            Seti.set("Current-Project",str(r))
+        Seti.save()
+
+print(argv[1])
+if len(argv)>=2:
+    if "--new" in argv:
+        create_project()
+    if not ("--c" in argv or "--compile" in argv):
+        print("no args provided, use '--c' to compile on next run")
+        exit(0)
+
+
+projectName = Seti.get("All-Projects")[Seti.get("Current-Project")]["name"]
+FILE=Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]
+
+
 
 paser_keywords_corespontents = {}
 
@@ -125,7 +161,7 @@ class NewParser:
     def __init__(self, name="this."):
         self.name = name
         self.tree = []
-        self.file = "test.mcdb"
+        self.file = FILE
         self.pointer = [0]
         self.section = ""
         self.form = []
