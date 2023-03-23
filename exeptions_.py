@@ -4,7 +4,9 @@ def BrackedNeverClosed(l):
 def MissingBrackts(l):
     print("Err: EmptyFunction in line "+str(l))
     ex()
-
+def MissingSimicolon(l):
+    print("Err: Missing semicolon in line "+str(l))
+    ex()
 def ex()->exit:
     exit(404)
 

@@ -9,6 +9,12 @@ import setings
 
 import templade, exeptions_
 
+minecraft_commands=["execute","fill","say","datapack","debug","help","jfr"
+                    "locate","perf","reload","scoreboard","seed","me","msg","tell",
+                    "tellraw","w","advancement","attribute","bossbar","clear","damage","data","effect","enchant","ep",
+                    "gamemode","give","item","kill","loot","particle","playsound","recipe","ride","spawnpoint",
+                    "stopsound","tag","team","tp","title","trigger","clone",
+                    "difficulty","place","fillbiome","forceload","data"]
 
 from sys import argv
 Seti= setings.Settings("settings.json")
@@ -32,7 +38,7 @@ def create_project():
             Seti.set("Current-Project",str(r))
         Seti.save()
 
-print(argv[1])
+
 if len(argv)>=2:
     if "--new" in argv:
         create_project()
@@ -181,17 +187,46 @@ class NewParser:
     def load(self,file=""):
         if file=="":
             with open(self.file, "r") as f:
-                self.text += f.read().replace("\n", "").replace("  ","")
+                self.text += f.read().replace("  ","")
         else:
             with open(file, "r") as f:
-                self.text += f.read().replace("\n", "").replace("  ","")
+                self.text += f.read().replace("  ","")
 
     def parse(self):
 
         enter=False
         disabled=False
+        linehasSimicolon=False
+        lineisEmpty=True
+        lineNum=0
+        lastChar=""
         for char in self.text:
+
             tree = self.getPoint()
+            if char not in [" ","\n"]:
+                lastchar=char
+
+            if (char!=" ")&(char!="\n")&(char not in ["{","}","[","]",";"]):
+                lineisEmpty=False
+
+
+            if char==";":
+                linehasSimicolon=True
+
+            if (char=="\n")&(lastChar not in ["{","}","[","]",";"]):
+                lineNum+=1
+                if linehasSimicolon|lineisEmpty:
+                    lineisEmpty=True
+                    linehasSimicolon=False
+
+                else:
+                    print("err")
+
+
+                    print(" ghdje",lastchar,char)
+                    exeptions_.MissingSimicolon(lineNum)
+            if char=="\n":
+                continue
 
             if ((char == "\"") | (char == "'")) & (not disabled):
 
@@ -532,6 +567,10 @@ class NewParser:
 
                     newList += ["@v-f " + lineList[li]]
                     pass
+
+                elif (Slist[0] in minecraft_commands):
+
+                    newList +=["@nai "+lineList[li]]
                 elif Slist[0].startswith("shr"):
                     shl=string.split(" ")
                     if len(shl)!=3:
@@ -703,6 +742,9 @@ class NewParser:
                     formatedLines += l + "\n"
                 elif line.startswith(" @inj"):
                     formatedLines+=self.removeStringIdentifier(line[6:])+"\n"
+                elif line.startswith(" @nai"):
+                    formatedLines+=line[6:]+"\n"
+
                 elif line.startswith(" @fc"):
                     #print("funccall",line)
                     ls = line.split(" ", 6)[1:]
