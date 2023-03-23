@@ -1,13 +1,14 @@
 include pointer/pointer;
 cc minebase;
+p=1;
+
 func empty(){
 place 12 12 12 minecraft:grass;}
 func diskpart(name){
 shr Entity i"@e[type=bat]";
 p= 12;
-inject "tesl ais best";
-c=
-12;
+
+
 d= p;
 myfunc(1,1,1,1);
 tls(1,1,1,1);

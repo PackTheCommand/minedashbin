@@ -7,8 +7,7 @@
 
 > # *Instruction Rules*:
 > * every instruction ends with a `;` example: `i=12;`
-> * line ends are **not important** for the end of a instrucktion example: `testvar=`_linebreak_`10;`
-
+>
 > ## *Imports*:
 > * Imports are done with `include filepath/filename;` or `native filepath/filename;`
 > * imports use for the file-extension native `.mcfunction` and for include `.mdblib`

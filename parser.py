@@ -42,10 +42,20 @@ def create_project():
 if len(argv)>=2:
     if "--new" in argv:
         create_project()
-    if not ("--c" in argv or "--compile" in argv):
+    for s in argv:
+        if s.startswith("--project"):
+            u,p=s.split("=",1)
+            prlist=Seti.get("All-Projects")
+            for i in prlist.keys():
+                if p in prlist[i]["name"]:
+                    Seti.set("Current-Project",i)
+    """if not ("--c" in argv or "--compile" in argv):
         print("no args provided, use '--c' to compile on next run")
-        exit(0)
+        exit(0)"""
 
+if Seti.get("All-Projects")=={}:
+    print("Error:","No project found, specify a project with '--new'")
+    exit()
 
 projectName = Seti.get("All-Projects")[Seti.get("Current-Project")]["name"]
 FILE=Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]
@@ -213,17 +223,15 @@ class NewParser:
             if char==";":
                 linehasSimicolon=True
 
-            if (char=="\n")&(lastChar not in ["{","}","[","]",";"]):
+
+
+            if (char=="\n")&(not(lastchar in["{","}","[","]",";"])):
                 lineNum+=1
                 if linehasSimicolon|lineisEmpty:
                     lineisEmpty=True
                     linehasSimicolon=False
 
                 else:
-                    print("err")
-
-
-                    print(" ghdje",lastchar,char)
                     exeptions_.MissingSimicolon(lineNum)
             if char=="\n":
                 continue
@@ -677,12 +685,12 @@ class NewParser:
 
     def Variabels_mine_format(self):
 
-        o=open("fjkdshjijhfdsjaö.txt", "w")
+        """o=open("fjkdshjijhfdsjaö.txt", "w")
 
         for f in self.files.keys():
             o.write("----"+f+"-----\n")
             o.write(self.files[f])
-        o.close()
+        o.close()"""
         for filename in list(self.files.keys()):
 
 
