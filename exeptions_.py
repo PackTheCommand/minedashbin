@@ -13,6 +13,9 @@ def ex()->exit:
 def CompilationError(pycode):
     print(f"Err: CompilationError '{repr(pycode)}' [Compiler-fails] reason <seePyBasedError> ")
     ex()
+def StringNeverClosedErr(line):
+    print(f"Err: String never closed in line '{line}'")
+    ex()
 
 
 def unknownOperator(op,l):

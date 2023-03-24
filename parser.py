@@ -204,13 +204,14 @@ class NewParser:
 
     def parse(self):
 
-        enter=False
-        disabled=False
+        insideString=False
+        escaped=False
         linehasSimicolon=False
         lineisEmpty=True
-        lineNum=0
-        lastChar=""
-        for char in self.text:
+        lineNum=1
+        stringOpendInLine=0
+
+        for charNr,char in enumerate(self.text):
 
             tree = self.getPoint()
             if char not in [" ","\n"]:
@@ -223,30 +224,38 @@ class NewParser:
             if char==";":
                 linehasSimicolon=True
 
+            #if line BreakProcedure
 
 
-            if (char=="\n")&(not(lastchar in["{","}","[","]",";"])):
-                lineNum+=1
-                if linehasSimicolon|lineisEmpty:
-                    lineisEmpty=True
-                    linehasSimicolon=False
 
-                else:
-                    exeptions_.MissingSimicolon(lineNum)
             if char=="\n":
+                lineNum += 1
+                if (not(self.text[charNr-1] in "{}[]\n")):
+
+                    if linehasSimicolon|lineisEmpty:
+                        lineisEmpty=True
+                        linehasSimicolon=False
+
+                    else:
+                        exeptions_.MissingSimicolon(lineNum-1)
+
+                if insideString:
+                    exeptions_.StringNeverClosedErr(stringOpendInLine)
                 continue
 
-            if ((char == "\"") | (char == "'")) & (not disabled):
+            if ((char == "\"") | (char == "'")) & (not escaped):
+                stringOpendInLine=lineNum
 
-                enter = not enter
+                insideString = not insideString
 
-            if disabled:
-                disabled = False
-            if (char == "\"") & enter:
-                disabled = True
+            if escaped:
+                escaped = False
+            if (char == "\\") & insideString:
+                stringOpendInLine=lineNum
+                escaped = True
 
             if (((char == "{") | (char == "}") | (char == "(") | (char == ")") | (char == "[") | (char == "]") | (
-                    char == ";"))&(not enter)):
+                    char == ";"))&(not insideString)):
 
                 if self.section != "":
                     # #print(self.section)
@@ -260,6 +269,8 @@ class NewParser:
                 self.section += str(char)
 
         self.form += self.section
+
+
 
 
     def toStruncktree(self):
@@ -517,12 +528,18 @@ class NewParser:
                 if self.files[a].startswith(" I..I")>0:
                     strlist=getStringSeperated(s,False)
                     fstr=""
-                    for n,st in enumerate( strlist):
-                        if n==0:
+                    n=len(strlist)
+                    firstline=True
+
+                    while n>=0:
+                        st =self.files[a][n]
+                        if firstline:
+                            firstline=False
                             st=st.replace(" I..I","")
                         fstr+=self.removeStringIdentifier(st,"k")
-
+                        n -= 1
                     f.write(fstr)
+
                 else:
                     f.write(s)
 

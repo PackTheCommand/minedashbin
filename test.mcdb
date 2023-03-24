@@ -1,13 +1,16 @@
+
 include pointer/pointer;
 cc minebase;
 p=1;
-
 func empty(){
-place 12 12 12 minecraft:grass;}
+place 12 12 12 minecraft:grass;
+}
 func diskpart(name){
 shr Entity i"@e[type=bat]";
 p= 12;
 
+shr te "";
+execute as <Entity> at @s run;
 
 d= p;
 myfunc(1,1,1,1);
@@ -15,6 +18,7 @@ tls(1,1,1,1);
 
 }
 shr selE "@e[type=creeper]";
+
 func tls(new,parser,privat,nuller){
 
 fill ~ ~ ~ dirt;
