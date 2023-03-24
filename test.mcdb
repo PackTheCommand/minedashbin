@@ -16,11 +16,15 @@ execute as <Entity> at @s run;
 
 d= p;
 myfunc(1,1,1,1);
+#if;
 tls(1,1,1,1);
 
 }
-shr selE "@e[type=creeper]";
 
+shr selE "@e[type=creeper]";
+say hi;
+
+say tse;
 func tls(new,parser,privat,nuller){
 
 

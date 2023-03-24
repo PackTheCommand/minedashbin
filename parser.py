@@ -174,8 +174,8 @@ def checkIfCharValid(str, list):
 
 
 
-def creComp(optype,payload):
-    return {"op": optype ,"payload":payload}
+def creComp(optype,payload,requires=None):
+    return {"op": optype ,"payload":payload,"requires":requires}
 
 
 class NewParser:
@@ -214,6 +214,7 @@ class NewParser:
         linehasSimicolon=False
         lineisEmpty=True
         lineNum=1
+        inComment=False
         stringOpendInLine=0
 
         for charNr,char in enumerate(self.text):
@@ -231,11 +232,9 @@ class NewParser:
 
             #if line BreakProcedure
 
-
-
-            if char=="\n":
-                lineNum += 1
-                if (not(self.text[charNr-1] in "{}[]\n")):
+            if ((self.text[charNr - 1]== "/")&(char=="/")&(not insideString)&(not inComment)):
+                print("Entered comment",bytes(self.text[charNr-2],"UTF-8"))
+                if (not(self.text[charNr-2] in "{}[]\n")):
 
                     if linehasSimicolon|lineisEmpty:
                         lineisEmpty=True
@@ -246,8 +245,35 @@ class NewParser:
 
                 if insideString:
                     exeptions_.StringNeverClosedErr(stringOpendInLine)
-                continue
+                inComment=True
+                self.section=self.section[:-2]
 
+            if char=="\n":
+
+                lineNum += 1
+                if inComment:
+                    print("LEntered comment")
+
+                    inComment=False
+                    continue
+
+                if (not(self.text[charNr-1] in "{}[]\n")):
+
+                    if linehasSimicolon|lineisEmpty:
+                        lineisEmpty=True
+                        linehasSimicolon=False
+
+                    else:
+                        print("com",char,)
+                        exeptions_.MissingSimicolon(lineNum-1)
+
+                if insideString:
+                    exeptions_.StringNeverClosedErr(stringOpendInLine)
+
+                continue
+            if inComment:
+                print("skipp ",char)
+                continue
             if ((char == "\"") | (char == "'")) & (not escaped):
                 stringOpendInLine=lineNum
 
@@ -550,10 +576,20 @@ class NewParser:
                 exeptions_.nativeModulerNotFound(filep)
 
     def identify_ops(self):
+        nextOPConditon = None
+        def newComp(optype,payload):
+            nonlocal nextOPConditon
+            r=creComp(optype,payload,requires=nextOPConditon)
+            nextOPConditon = None
+            return r
+
+
+
         for ins in range(0, len(self.funcs.keys())):
             key = list(self.funcs.keys())[ins]
             lineList = self.funcs[key]
             newList = []
+            nextOPConditon=None
             # newList += ["@fc "]
             li = -1
             while li in range(-1, len(lineList) - 1):
@@ -579,17 +615,21 @@ class NewParser:
                     if (pi > 9999):
                         exeptions_.parameterLimitReched(li)
                     li += pi - 1
-                    newList+=[creComp("@fc","this." + Slist[0] + " " + str(pi) + " " + args[1:-2])]
+                    newList+=[newComp("@fc","this." + Slist[0] + " " + str(pi) + " " + args[1:-2])]
                     #newList += ["@fc this." + Slist[0] + " " + str(pi) + " " + args[1:-2]]
                     ##print(Slist[0], args[1:-2])
                 elif key + "." + Slist[0] in self.blocks["_funcvar"]:
 
-                    newList += [creComp("@v-f" , lineList[li])]
+                    newList += [newComp("@v-f" , lineList[li])]
                     pass
 
                 elif (Slist[0] in minecraft_commands):
 
-                    newList +=[creComp("@nai",lineList[li])]
+                    newList +=[newComp("@nai",lineList[li])]
+                elif Slist[0].startswith("#if"):
+                    nextOPConditon=lineList[li]
+                    continue
+
                 elif Slist[0].startswith("shr"):
                     shl=string.split(" ")
                     if len(shl)!=3:
@@ -599,7 +639,7 @@ class NewParser:
                         self.shorts[name]=short
                 elif Slist[0].startswith("inject"):
 
-                    newList += [creComp("@inj" , lineList[li][7:])]
+                    newList += [newComp("@inj" , lineList[li][7:])]
                 elif ((len(fs) > len(Slist[0]))):
 
                     if (fs[len(Slist[0])] == "="):
@@ -622,7 +662,7 @@ class NewParser:
                             else:
                                 setVar += "$" + e[1] + " "
 
-                        newList += [creComp("@v-l" , setVar + typeofVAR)]
+                        newList += [newComp("@v-l" , setVar + typeofVAR)]
 
                         if name not in self.blocks["_allVars"]:
                             self.blocks["_allVars"][name] = Slist[1]
@@ -643,7 +683,7 @@ class NewParser:
                             #print(countkww,placein,paser_keywords_corespontents[Slist[0]],fs)
                             counttakes=paser_keywords_corespontents[Slist[0]].count("%s")
 
-                            newList += [creComp("@cc-inj",paser_keywords_corespontents[Slist[0]] % tuple(i for i in placein))]
+                            newList += [newComp("@cc-inj",paser_keywords_corespontents[Slist[0]] % tuple(i for i in placein))]
 
                         except Exception as e:
 
@@ -661,6 +701,7 @@ class NewParser:
                             exeptions_.indexiationError(string, "?")
                         exeptions_.unknownOperator(Slist[0], "?")
                 else:
+                    exeptions_.unableToUnderstandInstrucktion(string,"?")
                     pass
                     """
                     try:
@@ -716,7 +757,7 @@ class NewParser:
             while linePointer < len(old_lines):
                 #print("spm",allLines[linePointer],type(allLines[linePointer]))
                 opX = allLines[linePointer]["op"]
-
+                requires=allLines[linePointer]["requires"]
                 #print(opX)
 
                 line = self.replaceShort(allLines[linePointer]["payload"])
@@ -724,10 +765,14 @@ class NewParser:
 
                 linePointer += 1
 
+                if requires!=None:
+                    #todo impemantation of if statments
+                    pass
+
                 if opX=="@v-l":
                     print("varfounf",line)
 
-                    ls = line.split(" ")  #todo: ERROR=> memorize posible error
+                    ls = line.split(" ")
 
                     #print("val",ls)
                     sc_name = ls[0].replace("this.", "")
@@ -821,7 +866,7 @@ class NewParser:
 
 
                 else:
-                    #print(line)
+
                     if opX=="I..I":
                         # print(line)
                         if opX == "I..I":
