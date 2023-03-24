@@ -11,7 +11,7 @@
   {
     "kww":"run",
 
-    "syntax":"schedule function <<prName>>:%s 1s",
+    "syntax":"schedule function <<prName>>:%s 1t",
 
     "interface":"Nothing"
 

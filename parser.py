@@ -9,7 +9,7 @@ import setings
 
 import templade, exeptions_
 
-minecraft_commands=["execute","fill","say","datapack","debug","help","jfr"
+minecraft_commands=["execute","fill","say","datapack","debug","help","jfr","setblock",
                     "locate","perf","reload","scoreboard","seed","me","msg","tell",
                     "tellraw","w","advancement","attribute","bossbar","clear","damage","data","effect","enchant","ep",
                     "gamemode","give","item","kill","loot","particle","playsound","recipe","ride","spawnpoint",
@@ -171,6 +171,11 @@ def checkIfCharValid(str, list):
         if char not in list:
             return False
     return True
+
+
+
+def creComp(optype,payload):
+    return {"op": optype ,"payload":payload}
 
 
 class NewParser:
@@ -398,7 +403,7 @@ class NewParser:
                         handler = component["interface"]
                         if handler == "Nothing":
 
-                            paser_keywords_corespontents[kww] = "I..I " + synt.replace("<<prName>>",projectName)
+                            paser_keywords_corespontents[kww] =  synt.replace("<<prName>>",projectName)
                         else:
                             if kww not in paser_keywords_corespontents:
                                 paser_keywords_corespontents[kww] = "@C-had " + handler + " " + str(
@@ -443,13 +448,13 @@ class NewParser:
                 funcKey="main"
             else:
                 funcKey=key
-            s = ""
+            s = []
 
-            self.files[key]=""
+            self.files[key]=[]
 
             for line in self.funcs[funcKey]:
-                if line.replace(" ", "") != "":
-                    s += f" {line}\n"
+                if line["payload"].replace(" ", "") != "":
+                    s += [line]
             self.files[key] += s
 
     def creteFuncVaribleBlock(self):
@@ -520,28 +525,16 @@ class NewParser:
         with open(pathfunc+ "/routine_del_cleanup" + fx, "w") as f:
 
             f.write(self.ScoreboaRD_delete)
-
+        #print("keys", self.files)
         for a in self.files.keys():
+
             with open(pathfunc + "/_mbd_" + a.replace("this.", "") + "_" + fx, "w") as f:
                 # a is the filename
-                s=self.files[a]
-                if self.files[a].startswith(" I..I")>0:
-                    strlist=getStringSeperated(s,False)
-                    fstr=""
-                    n=len(strlist)
-                    firstline=True
 
-                    while n>=0:
-                        st =self.files[a][n]
-                        if firstline:
-                            firstline=False
-                            st=st.replace(" I..I","")
-                        fstr+=self.removeStringIdentifier(st,"k")
-                        n -= 1
-                    f.write(fstr)
-
-                else:
-                    f.write(s)
+                if type(self.files[a])==list:
+                    #print("skipp")
+                    continue
+                f.write(self.files[a])
 
 
             #print("requires",requires)
@@ -572,6 +565,7 @@ class NewParser:
                 Slist = re.split(",|=| ", fs)
                 # print("<<< ",Slist)
                 # #print(Slist)
+                #print(Slist,minecraft_commands.count(Slist[0]),minecraft_commands)
                 if "this." + Slist[0] in self.funcs.keys():
                     ##print(f"{Slist[0]} is a function")
                     args = ""
@@ -585,17 +579,17 @@ class NewParser:
                     if (pi > 9999):
                         exeptions_.parameterLimitReched(li)
                     li += pi - 1
-
-                    newList += ["@fc this." + Slist[0] + " " + str(pi) + " " + args[1:-2]]
+                    newList+=[creComp("@fc","this." + Slist[0] + " " + str(pi) + " " + args[1:-2])]
+                    #newList += ["@fc this." + Slist[0] + " " + str(pi) + " " + args[1:-2]]
                     ##print(Slist[0], args[1:-2])
                 elif key + "." + Slist[0] in self.blocks["_funcvar"]:
 
-                    newList += ["@v-f " + lineList[li]]
+                    newList += [creComp("@v-f" , lineList[li])]
                     pass
 
                 elif (Slist[0] in minecraft_commands):
 
-                    newList +=["@nai "+lineList[li]]
+                    newList +=[creComp("@nai",lineList[li])]
                 elif Slist[0].startswith("shr"):
                     shl=string.split(" ")
                     if len(shl)!=3:
@@ -604,7 +598,8 @@ class NewParser:
                         kww,name,short=shl
                         self.shorts[name]=short
                 elif Slist[0].startswith("inject"):
-                    newList += ["@inj " + lineList[li][7:]]
+
+                    newList += [creComp("@inj" , lineList[li][7:])]
                 elif ((len(fs) > len(Slist[0]))):
 
                     if (fs[len(Slist[0])] == "="):
@@ -627,13 +622,13 @@ class NewParser:
                             else:
                                 setVar += "$" + e[1] + " "
 
-                        newList += ["@v-l " + setVar + typeofVAR, ""]
+                        newList += [creComp("@v-l" , setVar + typeofVAR)]
 
                         if name not in self.blocks["_allVars"]:
                             self.blocks["_allVars"][name] = Slist[1]
 
 
-                    elif (Slist[0].split(" ")[0] in paser_keywords_corespontents.keys()):
+                    elif (Slist[0].split(" ")[0] in paser_keywords_corespontents.keys()): #todo : implement new cc system #migration
                         # print("--")
                         # print()
                         # print(Slist)
@@ -648,7 +643,7 @@ class NewParser:
                             #print(countkww,placein,paser_keywords_corespontents[Slist[0]],fs)
                             counttakes=paser_keywords_corespontents[Slist[0]].count("%s")
 
-                            newList += [paser_keywords_corespontents[Slist[0]] % tuple(i for i in placein)]
+                            newList += [creComp("@cc-inj",paser_keywords_corespontents[Slist[0]] % tuple(i for i in placein))]
 
                         except Exception as e:
 
@@ -708,31 +703,39 @@ class NewParser:
             o.write("----"+f+"-----\n")
             o.write(self.files[f])
         o.close()"""
+        print("allfuncs",list(self.files.keys()))
         for filename in list(self.files.keys()):
 
 
             old_lines = self.files[filename]
+            print(old_lines,filename)
             filename = filename.replace("this.", "")
             formatedLines = ""
             linePointer = 0
-            allLines = old_lines.split("\n")
-            while linePointer < len(allLines):
-                line = self.replaceShort(allLines[linePointer])
+            allLines = old_lines
+            while linePointer < len(old_lines):
+                #print("spm",allLines[linePointer],type(allLines[linePointer]))
+                opX = allLines[linePointer]["op"]
+
+                #print(opX)
+
+                line = self.replaceShort(allLines[linePointer]["payload"])
 
 
                 linePointer += 1
 
-                if line.startswith("@v-l") | line.startswith(" @v-l"):
-                    line.replace("@v-l ", "")
-                    ls = line[1:].split(" ")
+                if opX=="@v-l":
+                    print("varfounf",line)
 
+                    ls = line.split(" ")  #todo: ERROR=> memorize posible error
 
-                    sc_name = ls[1].replace("this.", "")
-                    operation = ls[2].replace("$", "")
-                    add_to_sc = ls[3].replace("this.", "")
+                    #print("val",ls)
+                    sc_name = ls[0].replace("this.", "")
+                    operation = ls[1].replace("$", "")
+                    add_to_sc = ls[2].replace("this.", "")
 
-                    sc_type = ls[4]
-
+                    sc_type = ls[3]
+                    print(sc_name,operation,add_to_sc,sc_type,opX)
                     l = ""
                     if operation != "=":
 
@@ -764,26 +767,31 @@ class NewParser:
                         else:
 
                             l = ""
+                    print(l)
                     formatedLines += l + "\n"
-                elif line.startswith(" @inj"):
-                    formatedLines+=self.removeStringIdentifier(line[6:])+"\n"
-                elif line.startswith(" @nai"):
-                    formatedLines+=line[6:]+"\n"
+                elif opX=="@inj":
 
-                elif line.startswith(" @fc"):
+                    formatedLines+=self.removeStringIdentifier(line[6:])+"\n"
+                elif opX=="@nai":
+                    formatedLines+=line+"\n"
+                elif opX=="@cc-inj":
+                    formatedLines+=line+"\n"
+
+                elif opX=="@fc":
                     #print("funccall",line)
-                    ls = line.split(" ", 6)[1:]
+                    ls = line.split(" ", 6)
+                    #print("search",ls)
 
                     #print("ls",ls)
-                    funcName = ls[1].replace("this.", "")
+                    funcName = ls[0].replace("this.", "")
 
-                    args = ls[4]
+                    args = ls[3]
 
                     argsCount=args.count(",")+1
                     if args.replace(" ","")=="":
                         argsCount=0
 
-                    sc_type = ls[4].replace(" ", "")
+                    sc_type = ls[3].replace(" ", "")
 
                     varNames = self.blocks["_funcvar"]
                     try:
@@ -804,24 +812,42 @@ class NewParser:
                         varname = "self.func_takes"
                         vartype = getType(var)
 
-                        ins = f"@v-l .{funcName}.{takesargsSplit[n]} $= .{var} {vartype}"
+                        ins = creComp("@v-l",f".{funcName}.{takesargsSplit[n]} $= .{var} {vartype}")
 
 
                         allLines.insert(linePointer + n, ins)
 
-                    formatedLines += "schedule function " + projectName + ":_mbd_" + funcName + " 1s\n"
-                elif line.startswith(" ||popl"):
-                    formatedLines+=["execute at "]
+                    formatedLines += "schedule function " + projectName + ":_mbd_" + funcName + " 1t\n"
+
 
                 else:
                     #print(line)
-                    if line.startswith("I..I")|line.startswith(" I..I"):
+                    if opX=="I..I":
+                        # print(line)
+                        if opX == "I..I":
+                            strlist = getStringSeperated(s, False)
+                            fstr = ""
+                            n = len(strlist)
+                            firstline = True
 
-                        formatedLines+=line
+                            while n >= 0:
+                                st = strlist[n]
+                                if firstline:
+                                    firstline = False
 
+                                fstr += self.removeStringIdentifier(st, "k")
+                                n -= 1
+                                formatedLines += fstr
 
+                            formatedLines += line
+                    else:
+                        print("rejected",line,opX)
 
-            self.files["this." + filename] = formatedLines
+            if filename!="main":
+                self.files["this."+filename] = formatedLines
+            else:
+                self.files[filename] = formatedLines
+        print(self.files)
 
 includes=[]
 requires=[]
@@ -873,6 +899,6 @@ try:
     e = time.time()
     time.sleep(0.001)
 
-except IndexError as e:
+except OSError as e:
     exeptions_.CompilationError(e)
 
