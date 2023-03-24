@@ -24,7 +24,13 @@
 > ## Other Keywords:
 > * `cc filename` is used to import custom keywords
 > * > `shr shortName "association";` is used to define shorts ,shorts get then user by using `<shortname>` inside of your functions .Shorts are normally strings,  there references get replaced with there association upon compile time
-> * `inject "code"` is used to insert minecraft commands directly into the code ,these instruction skipp any compilers checks 
+
+
+> ## Command injection:
+> * **any minecraft command can be use inside the file they only need an ** 
+> * `NOTE: Native minecraft command are not checked on syntax at this point`
+> * Example
+
 
 > ## Example Program:
 >> `include pointer/pointer;`<br>
