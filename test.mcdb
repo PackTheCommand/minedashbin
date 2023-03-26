@@ -16,7 +16,7 @@ execute as <Entity> at @s run;
 
 d= p;
 myfunc(1,1,1,1);
-#if;
+#req "execute if a==b";
 tls(1,1,1,1);
 
 }

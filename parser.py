@@ -15,6 +15,8 @@ minecraft_commands=["execute","fill","say","datapack","debug","help","jfr","setb
                     "gamemode","give","item","kill","loot","particle","playsound","recipe","ride","spawnpoint",
                     "stopsound","tag","team","tp","title","trigger","clone",
                     "difficulty","place","fillbiome","forceload","data"]
+num = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", " "]
+hasch = ["#", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f"]
 
 from sys import argv
 Seti= setings.Settings("settings.json")
@@ -37,6 +39,39 @@ def create_project():
         if yn == "y":
             Seti.set("Current-Project",str(r))
         Seti.save()
+
+
+def getIfinstructParts(string:str)->tuple[list[str,str,str],list[str,str]]:
+    fl=["","",""]
+    index=-1
+    types=["","",""]
+    curent=None
+    new=None
+    for char in string:
+
+
+
+        if char in num:
+            new="num"
+        elif char in "<>=":
+            new="opx"
+        else:
+            new ="var"
+        if char==" ":
+            continue
+
+        if curent!=new:
+            curent=new
+
+            index+=1
+            types[index]=new
+        fl[index]+=char
+
+    return (fl,types)
+
+
+
+
 
 
 if len(argv)>=2:
@@ -64,8 +99,7 @@ FILE=Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]
 
 paser_keywords_corespontents = {}
 
-num = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", " "]
-hasch = ["#", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f"]
+
 def getStringSeperated(string,splitonspace=True):
     retStr=[""]
 
@@ -241,10 +275,10 @@ class NewParser:
                         linehasSimicolon=False
 
                     else:
-                        exeptions_.MissingSimicolon(lineNum-1)
+                        exeptions_.throwError.MissingSimicolon(lineNum-1)
 
                 if insideString:
-                    exeptions_.StringNeverClosedErr(stringOpendInLine)
+                    exeptions_.throwError.StringNeverClosedErr(stringOpendInLine)
                 inComment=True
                 self.section=self.section[:-2]
 
@@ -265,10 +299,10 @@ class NewParser:
 
                     else:
                         print("com",char,)
-                        exeptions_.MissingSimicolon(lineNum-1)
+                        exeptions_.throwError.MissingSimicolon(lineNum-1)
 
                 if insideString:
-                    exeptions_.StringNeverClosedErr(stringOpendInLine)
+                    exeptions_.throwError.StringNeverClosedErr(stringOpendInLine)
 
                 continue
             if inComment:
@@ -356,7 +390,7 @@ class NewParser:
                             try:
                                 sc = self.form[pi][0]  # sc is a char , pi is a string
                             except IndexError:
-                                exeptions_.BrackedNeverClosed(i)
+                                exeptions_.throwError.BrackedNeverClosed(i)
 
                         i = pi + 1
                         between.pop(0)
@@ -435,18 +469,18 @@ class NewParser:
                                 paser_keywords_corespontents[kww] = "@C-had " + handler + " " + str(
                                     synt.count("%s")) + " " + synt
                             else:
-                                exeptions_.ccFileError(" <was trying to overwrite existing interface '" + kww + "'>",
+                                exeptions_.throwError.ccFileError(" <was trying to overwrite existing interface '" + kww + "'>",
                                                        file)
 
             except KeyError:
-                exeptions_.ccFileError(" <missing link components>", file)
+                exeptions_.throwError.ccFileError(" <missing link components>", file)
             except FileNotFoundError as e:
 
-                exeptions_.ccFileError(" <File-Does-Not-Exist>", file)
+                exeptions_.throwError.ccFileError(" <File-Does-Not-Exist>", file)
             except json.decoder.JSONDecodeError:
-                exeptions_.ccFileError(" <JsonFileInvalid>", file)
+                exeptions_.throwError.ccFileError(" <JsonFileInvalid>", file)
             except Exception:
-                exeptions_.ccFileError(" <Exception>", file)
+                exeptions_.throwError.ccFileError(" <Exception>", file)
 
     def createBlockInclude(self):
         l = []
@@ -573,7 +607,7 @@ class NewParser:
                 #print("copied",filep)
                 shutil.copyfile(p+".mcfunction",pathfunc+"/"+filep.split("/")[-1]+".mcfunction")
             else:
-                exeptions_.nativeModulerNotFound(filep)
+                exeptions_.throwError.nativeModulerNotFound(filep)
 
     def identify_ops(self):
         nextOPConditon = None
@@ -613,7 +647,7 @@ class NewParser:
                         args += sl + " "
                         pi += 1
                     if (pi > 9999):
-                        exeptions_.parameterLimitReched(li)
+                        exeptions_.throwError.parameterLimitReched(li)
                     li += pi - 1
                     newList+=[newComp("@fc","this." + Slist[0] + " " + str(pi) + " " + args[1:-2])]
                     #newList += ["@fc this." + Slist[0] + " " + str(pi) + " " + args[1:-2]]
@@ -629,11 +663,15 @@ class NewParser:
                 elif Slist[0].startswith("#if"):
                     nextOPConditon=lineList[li]
                     continue
-
+                elif Slist[0].startswith("#req"):
+                    nextOPConditon=lineList[li]
+                elif Slist[0].startswith("#event"):
+                    #todo:events like on load on tick
+                    continue
                 elif Slist[0].startswith("shr"):
                     shl=string.split(" ")
                     if len(shl)!=3:
-                        exeptions_.schortGivenToMuchArgs(string)
+                        exeptions_.throwError.schortGivenToMuchArgs(string)
                     else:
                         kww,name,short=shl
                         self.shorts[name]=short
@@ -687,7 +725,7 @@ class NewParser:
 
                         except Exception as e:
 
-                            exeptions_.kww_missing_arguments(li, Slist[0], countkww, counttakes)
+                            exeptions_.throwError.kww_missing_arguments(li, Slist[0], countkww, counttakes)
 
                         pass
                     else:
@@ -698,10 +736,10 @@ class NewParser:
                             continue
                         #print("operator","'"+str(Slist)+"'")
                         if Slist[0]=="":
-                            exeptions_.indexiationError(string, "?")
-                        exeptions_.unknownOperator(Slist[0], "?")
+                            exeptions_.throwError.indexiationError(string, "?")
+                        exeptions_.throwError.unknownOperator(Slist[0], "?")
                 else:
-                    exeptions_.unableToUnderstandInstrucktion(string,"?")
+                    exeptions_.throwError.unableToUnderstandInstrucktion(string,"?")
                     pass
                     """
                     try:
@@ -754,20 +792,54 @@ class NewParser:
             formatedLines = ""
             linePointer = 0
             allLines = old_lines
+            lastrequires=""
+            prefix=""
             while linePointer < len(old_lines):
                 #print("spm",allLines[linePointer],type(allLines[linePointer]))
                 opX = allLines[linePointer]["op"]
                 requires=allLines[linePointer]["requires"]
+                line = self.replaceShort(allLines[linePointer]["payload"])
                 #print(opX)
 
-                line = self.replaceShort(allLines[linePointer]["payload"])
+                if requires!=None:
+                    if requires != None:
+                        if requires.startswith("#req"):
+                            try:
+                                prefix=self.removeStringIdentifier(getStringSeperated(requires,False)[1])+" "
+                            except:
+
+                                exeptions_.throwError.invalidIfinstucktion(requires)
+
+
+                        elif requires.startswith("#if"):
+                            try:
+                                parts, types = getIfinstructParts(line[4:])
+                            except:
+                                print(requires)
+                                exeptions_.throwError.invalidIfinstucktion(requires)
+                            if (types[1] != "opx") | len(parts) != 3:
+                                exeptions_.throwError.invalidIfinstucktion(requires)
+                            var1, op, var2 = parts
+                            t_v1, u, t_v2 = types
+                            # todo : continue here
+
+                        pass
+
+                else:
+                    prefix=""
+                    lastrequires=""
+
+                def generateEXE__Ifinstruction():
+                    pass
+
+
+
+
+
+
 
 
                 linePointer += 1
-
-                if requires!=None:
-                    #todo impemantation of if statments
-                    pass
 
                 if opX=="@v-l":
                     print("varfounf",line)
@@ -813,14 +885,14 @@ class NewParser:
 
                             l = ""
                     print(l)
-                    formatedLines += l + "\n"
+                    formatedLines += prefix+l + "\n"
                 elif opX=="@inj":
 
-                    formatedLines+=self.removeStringIdentifier(line[6:])+"\n"
+                    formatedLines+=prefix+self.removeStringIdentifier(line[6:])+"\n"
                 elif opX=="@nai":
-                    formatedLines+=line+"\n"
+                    formatedLines+=prefix+line+"\n"
                 elif opX=="@cc-inj":
-                    formatedLines+=line+"\n"
+                    formatedLines+=prefix+line+"\n"
 
                 elif opX=="@fc":
                     #print("funccall",line)
@@ -843,7 +915,7 @@ class NewParser:
                         takescount, takesargs = self.func_takes["this." + funcName]
                     except:
                         #print(line)
-                        exeptions_.functionDoesntExist(funcName)
+                        exeptions_.throwError.functionDoesntExist(funcName)
                         return "END_OF_PROGRAM_BY_EXCEPTION"
                     takesargsSplit=takesargs.split(",")
                     #print(funcName,int(argsCount), takescount)
@@ -851,18 +923,18 @@ class NewParser:
 
 
                         #print(type(argsCount),type(takescount),line)
-                        exeptions_.parameterCountNotMacking(funcName, takescount, argsCount)
+                        exeptions_.throwError.parameterCountNotMacking(funcName, takescount, argsCount)
 
                     for n, var in enumerate(args.split(",")):
                         varname = "self.func_takes"
                         vartype = getType(var)
 
-                        ins = creComp("@v-l",f".{funcName}.{takesargsSplit[n]} $= .{var} {vartype}")
+                        ins = creComp("@v-l",f".{funcName}.{takesargsSplit[n]} $= .{var} {vartype}",requires=requires)
 
 
                         allLines.insert(linePointer + n, ins)
 
-                    formatedLines += "schedule function " + projectName + ":_mbd_" + funcName + " 1t\n"
+                    formatedLines += prefix+"schedule function " + projectName + ":_mbd_" + funcName + " 1t\n"
 
 
                 else:
@@ -910,7 +982,7 @@ try:
             elif os.path.exists("templates/baselib/" + incl + ".mdblib"):
                 p.load("templates/baselib/" + incl + ".mdblib")
             else:
-                exeptions_.ModuleNotFound(incl)
+                exeptions_.throwError.ModuleNotFound(incl)
 
 
         p.parse()
@@ -945,5 +1017,5 @@ try:
     time.sleep(0.001)
 
 except OSError as e:
-    exeptions_.CompilationError(e)
+    exeptions_.throwError.CompilationError(e)
 
