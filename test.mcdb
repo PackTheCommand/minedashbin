@@ -1,11 +1,15 @@
 
 include pointer/pointer;
+include shr/ifs;
 cc minebase;
 p=1;
 tz=2;
+
 setblock 1 1 1 dirt;
 func empty(){
+
 setblock 12 12 12 minecraft:grass;
+<dimensionIsEnd> <WeatherRain>;
 }
 func diskpart(name){
 shr Entity "@e[type=bat]";

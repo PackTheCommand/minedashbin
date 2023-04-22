@@ -1,4 +1,4 @@
-> # MineDashBin Faetures 
+> # MineDashBin Features 
 
 
  <!-- TOC -->
@@ -18,7 +18,7 @@
 <!-- TOC -->
 
 > ## Imports --------------------------------
-> ### Import `.mcdblib` files (normal Code)
+> ### Import `.mcbd` files (normal Code)
 > * **Keyword :** `include` 
 > * Usage : `include folder/file;`
 > * Examples : `include pointer/pointer;`
@@ -48,6 +48,14 @@
 > * Call functions: `funcname(args1,args2,...)`
 > * Examples : `func summonArmored(){summon minecraft:armor_stand ~ ~ ~}` <br> as reference than :`summonArmored();`
 > 
+> ## If statements --------------------------------
+> #### Functions later get compiled into alone-standing `.mcfunction` files but you can write them all in one file
+> * **Keyword :** `#req` or `#if`(coming soon)
+> * **Usage** : `#req statement`
+> * **What does it do ?** : #req sets the given condition as the prefix for the next line to execute (especially recommend for functionsCals)
+> 
+> ### Future
+> * its work in progress to add the `#if` statement that lets you evaluate variables
 
 
 

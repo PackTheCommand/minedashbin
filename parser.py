@@ -668,16 +668,25 @@ class NewParser:
                 elif Slist[0].startswith("#event"):
                     #todo:events like on load on tick
                     continue
-                elif Slist[0].startswith("shr"):
-                    shl=string.split(" ")
-                    if len(shl)!=3:
+                elif Slist[0].startswith("shr"):#
+
+                    shl=list_remove_empty(getStringSeperated(string))
+                    print("fjkopredjfds",shl)
+                    le=len(shl)
+
+                    if le!=3:
                         exeptions_.throwError.schortGivenToMuchArgs(string)
                     else:
                         kww,name,short=shl
-                        self.shorts[name]=short
+                        self.shorts[name.replace(" ","")]=short
                 elif Slist[0].startswith("inject"):
 
                     newList += [newComp("@inj" , lineList[li][7:])]
+
+                elif Slist[0].startswith("<") & Slist[0].endswith(">"):
+                    print("add",lineList[li])
+                    newList += [newComp("@inj-shrline", lineList[li])]
+
                 elif ((len(fs) > len(Slist[0]))):
 
                     if (fs[len(Slist[0])] == "="):
@@ -706,6 +715,7 @@ class NewParser:
                             self.blocks["_allVars"][name] = Slist[1]
 
 
+
                     elif (Slist[0].split(" ")[0] in paser_keywords_corespontents.keys()): #todo : implement new cc system #migration
                         # print("--")
                         # print()
@@ -729,6 +739,7 @@ class NewParser:
 
                         pass
                     else:
+
                         # print(Slist)
                         if (Slist[0].startswith("@")):
                             continue
@@ -739,6 +750,7 @@ class NewParser:
                             exeptions_.throwError.indexiationError(string, "?")
                         exeptions_.throwError.unknownOperator(Slist[0], "?")
                 else:
+
                     exeptions_.throwError.unableToUnderstandInstrucktion(string,"?")
                     pass
                     """
@@ -799,6 +811,7 @@ class NewParser:
                 opX = allLines[linePointer]["op"]
                 requires=allLines[linePointer]["requires"]
                 line = self.replaceShort(allLines[linePointer]["payload"])
+                print("shr",self.shorts)
                 #print(opX)
 
                 if requires!=None:
@@ -889,6 +902,9 @@ class NewParser:
                 elif opX=="@inj":
 
                     formatedLines+=prefix+self.removeStringIdentifier(line[6:])+"\n"
+                elif opX=="@inj-shrline":
+
+                    formatedLines+=prefix+(self.removeStringIdentifier(line))+"\n"
                 elif opX=="@nai":
                     formatedLines+=prefix+line+"\n"
                 elif opX=="@cc-inj":
@@ -977,10 +993,11 @@ try:
         p = NewParser()
         p.load()
         for incl in includes:
-            if os.path.exists(incl + ".mdblib"):
-                p.load(incl + ".mdblib")
-            elif os.path.exists("templates/baselib/" + incl + ".mdblib"):
-                p.load("templates/baselib/" + incl + ".mdblib")
+
+            if os.path.exists(incl + ".mcdb"):
+                p.load(incl + ".mcdb")
+            elif os.path.exists("templates/baselib/" + incl + ".mcdb"):
+                p.load("templates/baselib/" + incl + ".mcdb")
             else:
                 exeptions_.throwError.ModuleNotFound(incl)
 
