@@ -382,9 +382,18 @@ class NewParser:
                     if enter:
                         sc = ""
                         between = []
+                        brackedStack="{"
+                        print("add")
+                        while brackedStack != "":
+                            if sc == "{":
+                                brackedStack += "{"
+                                print("add")
 
-                        while sc != "}":
-
+                            if sc == "}":
+                                brackedStack = brackedStack[:-1]
+                                print("brackedstack")
+                                if len(brackedStack) == 0:
+                                    break
                             between += [self.form[pi]]
                             pi += 1
                             try:
@@ -611,11 +620,22 @@ class NewParser:
 
     def identify_ops(self):
         nextOPConditon = None
+        conditionStack=[]
         def newComp(optype,payload):
             nonlocal nextOPConditon
-            r=creComp(optype,payload,requires=nextOPConditon)
+            print("condition",conditionStack)
+            cond=None
+            if conditionStack!=[]:
+                cond=""
+                for c in conditionStack:
+                    cond+=c
+            r=creComp(optype,payload,requires=cond)
             nextOPConditon = None
             return r
+        def checkConditionClose(char):
+            nonlocal conditionStack
+            if char=="}":
+                conditionStack.pop(-1)
 
 
 
@@ -626,16 +646,20 @@ class NewParser:
             nextOPConditon=None
             # newList += ["@fc "]
             li = -1
+
+
             while li in range(-1, len(lineList) - 1):
                 li += 1
 
                 string = self.funcs[key][li]
+
                 fs = re.sub("\s\s+", " ", string)
                 # print("<<<",fs)
                 Slist = re.split(",|=| ", fs)
                 # print("<<< ",Slist)
                 # #print(Slist)
                 #print(Slist,minecraft_commands.count(Slist[0]),minecraft_commands)
+
                 if "this." + Slist[0] in self.funcs.keys():
                     ##print(f"{Slist[0]} is a function")
                     args = ""
@@ -652,6 +676,9 @@ class NewParser:
                     newList+=[newComp("@fc","this." + Slist[0] + " " + str(pi) + " " + args[1:-2])]
                     #newList += ["@fc this." + Slist[0] + " " + str(pi) + " " + args[1:-2]]
                     ##print(Slist[0], args[1:-2])
+
+                elif Slist[0]=="}":
+                    conditionStack.pop(-1)
                 elif key + "." + Slist[0] in self.blocks["_funcvar"]:
 
                     newList += [newComp("@v-f" , lineList[li])]
@@ -663,6 +690,34 @@ class NewParser:
                 elif Slist[0].startswith("#if"):
                     nextOPConditon=lineList[li]
                     continue
+                elif Slist[0].startswith("if"):
+
+                    strind=0
+                    condition=""
+
+                    string = self.funcs[key][li]
+                    print(strind,string)
+                    while self.funcs[key][li]!="(":
+
+                        li+=1
+
+                        #string = self.funcs[key][li]
+                    st=self.funcs[key][li]
+                    while  st!=")":
+                        li+=1
+                        st = self.funcs[key][li]
+                        condition+=st
+                    while st != "{":
+                        li += 1
+                        st = self.funcs[key][li]
+
+
+                    print("cont",condition)
+                    if condition[-1]==")":
+                        condition=condition[:-1]
+                    conditionStack+=[condition]
+
+
                 elif Slist[0].startswith("#req"):
                     nextOPConditon=lineList[li]
                 elif Slist[0].startswith("#event"):
@@ -748,6 +803,7 @@ class NewParser:
                         #print("operator","'"+str(Slist)+"'")
                         if Slist[0]=="":
                             exeptions_.throwError.indexiationError(string, "?")
+
                         exeptions_.throwError.unknownOperator(Slist[0], "?")
                 else:
 
@@ -810,51 +866,53 @@ class NewParser:
                 #print("spm",allLines[linePointer],type(allLines[linePointer]))
                 opX = allLines[linePointer]["op"]
                 requires=allLines[linePointer]["requires"]
+
+
+
                 line = self.replaceShort(allLines[linePointer]["payload"])
                 print("shr",self.shorts)
                 #print(opX)
-
+                print("prfix9", requires,allLines[linePointer])
                 if requires!=None:
-                    if requires != None:
-                        if requires.startswith("#req"):
-                            try:
-                                prefix=self.removeStringIdentifier(getStringSeperated(requires,False)[1])+" "
-                            except:
-
-                                exeptions_.throwError.invalidIfinstucktion(requires)
 
 
-                        elif requires.startswith("#if"):
-                            try:
-                                parts, types = getIfinstructParts(line[4:])
-                            except:
-                                print(requires)
-                                exeptions_.throwError.invalidIfinstucktion(requires)
-                            if (types[1] != "opx") | len(parts) != 3:
-                                exeptions_.throwError.invalidIfinstucktion(requires)
-                            var1, op, var2 = parts
-                            t_v1, u, t_v2 = types
-                            # todo : continue here
-
-                        pass
+                    try:
+                        prefix=""
+                        print("contsep",getStringSeperated(requires,False))
+                        for e in getStringSeperated(requires,False):
+                            if e=="":
+                                continue
+                            if (not e.startswith("\""))|(not e.startswith("\'")):
+                                e=self.replaceShort(e)
+                            prefix += self.removeStringIdentifier(e)+" "
+                        prefix=prefix.replace("  "," ")
+                        print("prfix",prefix,"")
+                    except:
+                        exeptions_.throwError.invalidIfinstucktion(requires)
+                        """ elif requires.startswith("#if"):if requires.startswith("#req"):
+                                try:
+                                    parts, types = getIfinstructParts(line[4:])
+                                except:
+                                    print(requires)
+                                    exeptions_.throwError.invalidIfinstucktion(requires)
+                                if (types[1] != "opx") | len(parts) != 3:
+                                    exeptions_.throwError.invalidIfinstucktion(requires)
+                                var1, op, var2 = parts
+                                t_v1, u, t_v2 = types
+                                # todo : continue here
+            
+                            pass
+                            """
 
                 else:
                     prefix=""
                     lastrequires=""
 
-                def generateEXE__Ifinstruction():
-                    pass
-
-
-
-
-
-
-
 
                 linePointer += 1
 
                 if opX=="@v-l":
+                    print("")
                     print("varfounf",line)
 
                     ls = line.split(" ")
