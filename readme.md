@@ -31,4 +31,5 @@
 > * `NOTE: Native minecraft command are not checked on syntax at this point`
 > * Example
 
+> # more in Features.md
 
