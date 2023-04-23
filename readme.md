@@ -10,7 +10,7 @@
 >
 > ## *Imports*:
 > * Imports are done with `include filepath/filename;` or `native filepath/filename;`
-> * imports use for the file-extension native `.mcfunction` and for include `.mdblib`
+> * imports use for the file-extension native `.mcfunction` and for include `.mcdb`
 > * imports-paths are used without the file-extension example : `include pointer/pointer` is loading file `pointer.mdblib`
 > * the import module seach is first searching in the project directory,then in `<compilerdir>/templates/baselib`
 
