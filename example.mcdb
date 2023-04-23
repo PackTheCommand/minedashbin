@@ -1,0 +1,44 @@
+
+
+cc minebase;
+p=1;
+tz=2;
+include pointer/pointer;
+include shr/ifs;
+setblock 1 1 1 dirt;
+func empty(){
+
+setblock 12 12 12 minecraft:grass;
+<dimensionIsEnd> <WeatherRain>;
+}
+func diskpart(name){
+shr Entity "@e[type=bat]";
+p= 12;
+run system;
+shr te "";
+execute as <Entity> at @s run;
+say te;
+d= p;
+myfunc(1,1,1,1);
+
+tls(1,1,1,1);
+
+}
+func main(name){shr selE "@e[type=creeper]";
+say hi;
+}
+
+func tls(new,parser,privat,nuller){
+
+
+
+fill ~ ~ ~ ~ ~ ~ dirt;
+execute as <selE> run say hi;
+}
+func myfunc(new,parser,privat,nuller){
+a=12;
+
+}
+
+say Loaded;
+func doNothing(){}

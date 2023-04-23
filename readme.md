@@ -32,23 +32,3 @@
 > * Example
 
 
-> ## Example Program:
->> `include pointer/pointer;`<br>
->    `cc minebase;`<br>
->    `func empty(){`<br>
->    `place 12 12 12 minecraft:grass;}`<br>
->    `func diskpart(name){`<br>
->    `shr Entity i"@e[type=bat]";`<br>
->    `p= 12;`<br>
->    `inject "tesl ais best";`<br>
->    `c=`<br>
->    `12;`<br>
->    `d= p;`<br>
->    `myfunc(1,1,1,1);`<br>
->    `tls(1,1,1,1);`<br>
->    `}`<br>
->    `func tls(new,parser,privat,nuller){`<br>
->    `printst "test";`<br>
->    `}`<br>
->    `func myfunc(new,parser,privat,nuller){`<br>
->    `}`<br>
