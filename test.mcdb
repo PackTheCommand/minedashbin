@@ -16,23 +16,20 @@ p= 12;
 run system;
 shr te "";
 execute as <Entity> at @s run;
-
+say te;
 d= p;
 myfunc(1,1,1,1);
 #req "execute if a==b";
 tls(1,1,1,1);
 
 }
-
-shr selE "@e[type=creeper]";
+func main(name){shr selE "@e[type=creeper]";
 say hi;
+}
 
 func tls(new,parser,privat,nuller){
-if ("execute if "<selE>){
-if ("past==exe"){
-say tse;
-}
-}
+
+
 
 fill ~ ~ ~ ~ ~ ~ dirt;
 execute as <selE> run say hi;
@@ -42,5 +39,5 @@ a=12;
 
 }
 
-
-
+say Loaded;
+func doNothing(){}

@@ -9,111 +9,110 @@ import setings
 
 import templade, exeptions_
 
-minecraft_commands=["execute","fill","say","datapack","debug","help","jfr","setblock",
-                    "locate","perf","reload","scoreboard","seed","me","msg","tell",
-                    "tellraw","w","advancement","attribute","bossbar","clear","damage","data","effect","enchant","ep",
-                    "gamemode","give","item","kill","loot","particle","playsound","recipe","ride","spawnpoint",
-                    "stopsound","tag","team","tp","title","trigger","clone",
-                    "difficulty","place","fillbiome","forceload","data"]
+minecraft_commands = ["execute", "fill", "say", "datapack", "debug", "help", "jfr", "setblock",
+                      "locate", "perf", "reload", "scoreboard", "seed", "me", "msg", "tell",
+                      "tellraw", "w", "advancement", "attribute", "bossbar", "clear", "damage", "data", "effect",
+                      "enchant", "ep",
+                      "gamemode", "give", "item", "kill", "loot", "particle", "playsound", "recipe", "ride",
+                      "spawnpoint",
+                      "stopsound", "tag", "team", "tp", "title", "trigger", "clone",
+                      "difficulty", "place", "fillbiome", "forceload", "data"]
 num = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", " "]
 hasch = ["#", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f"]
 
 from sys import argv
-Seti= setings.Settings("settings.json")
+
+Seti = setings.Settings("settings.json")
+
+
 def create_project():
-    name=input("Project Name: ")
-    sourcefile=input("Main file: ")
+    name = input("Project Name: ")
+    sourcefile = input("Main file: ")
 
-    print("Project Name: "+name+" ,Source File: "+sourcefile)
-    yn=input("Create project? (y/n)")
-    if yn=="y":
+    print("Project Name: " + name + " ,Source File: " + sourcefile)
+    yn = input("Create project? (y/n)")
+    if yn == "y":
 
-        r=random.randint(1,9999999)
+        r = random.randint(1, 9999999)
         while str(r) in Seti.get("pr_ids"):
             r = random.randint(1, 9999999)
 
         print("creating files")
-        Seti.get("All-Projects")[r]={"name": name, "source": sourcefile}
+        Seti.get("All-Projects")[r] = {"name": name, "source": sourcefile}
 
         yn = input("Set as Current Project ? (y/n)")
         if yn == "y":
-            Seti.set("Current-Project",str(r))
+            Seti.set("Current-Project", str(r))
         Seti.save()
 
 
-def getIfinstructParts(string:str)->tuple[list[str,str,str],list[str,str]]:
-    fl=["","",""]
-    index=-1
-    types=["","",""]
-    curent=None
-    new=None
+def getIfinstructParts(string: str) -> tuple[list[str, str, str], list[str, str]]:
+    fl = ["", "", ""]
+    index = -1
+    types = ["", "", ""]
+    curent = None
+    new = None
     for char in string:
 
-
-
         if char in num:
-            new="num"
+            new = "num"
         elif char in "<>=":
-            new="opx"
+            new = "opx"
         else:
-            new ="var"
-        if char==" ":
+            new = "var"
+        if char == " ":
             continue
 
-        if curent!=new:
-            curent=new
+        if curent != new:
+            curent = new
 
-            index+=1
-            types[index]=new
-        fl[index]+=char
+            index += 1
+            types[index] = new
+        fl[index] += char
 
-    return (fl,types)
-
-
+    return (fl, types)
 
 
-
-
-if len(argv)>=2:
+if len(argv) >= 2:
     if "--new" in argv:
         create_project()
     for s in argv:
         if s.startswith("--project"):
-            u,p=s.split("=",1)
-            prlist=Seti.get("All-Projects")
+            u, p = s.split("=", 1)
+            prlist = Seti.get("All-Projects")
             for i in prlist.keys():
                 if p in prlist[i]["name"]:
-                    Seti.set("Current-Project",i)
+                    Seti.set("Current-Project", i)
     """if not ("--c" in argv or "--compile" in argv):
         print("no args provided, use '--c' to compile on next run")
         exit(0)"""
 
-if Seti.get("All-Projects")=={}:
-    print("Error:","No project found, specify a project with '--new'")
+if Seti.get("All-Projects") == {}:
+    print("Error:", "No project found, specify a project with '--new'")
     exit()
 
 projectName = Seti.get("All-Projects")[Seti.get("Current-Project")]["name"]
-FILE=Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]
+projectout = Seti.get("All-Projects")[Seti.get("Current-Project")]["out"]
 
-
+FILE = Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]
 
 paser_keywords_corespontents = {}
 
 
-def getStringSeperated(string,splitonspace=True):
-    retStr=[""]
+def getStringSeperated(string, splitonspace=True):
+    retStr = [""]
 
-    enter=False
-    disabled=False
+    enter = False
+    disabled = False
     for char in string:
-        if splitonspace&(char==" ")&(not enter):
+        if splitonspace & (char == " ") & (not enter):
             retStr[-1] += char
             retStr += [""]
             continue
 
-        if ((char == "\"")|(char == "'"))&(not disabled):
+        if ((char == "\"") | (char == "'")) & (not disabled):
 
-            enter=not enter
+            enter = not enter
             if enter:
                 retStr += [""]
             else:
@@ -121,17 +120,18 @@ def getStringSeperated(string,splitonspace=True):
                 retStr += [""]
                 continue
         if disabled:
-            disabled=False
-        if (char == "\"")&enter:
-            disabled=True
+            disabled = False
+        if (char == "\"") & enter:
+            disabled = True
         if enter:
-            add=True
+            add = True
 
-        retStr[-1]+=char
+        retStr[-1] += char
     return retStr
 
-#print(getStringSeperated("test# 'test'"))
-#exit()
+
+# print(getStringSeperated("test# 'test'"))
+# exit()
 
 
 def list_remove_empty(list):
@@ -140,8 +140,9 @@ def list_remove_empty(list):
     return list
 
 
+parserCCCBeginWords = []
 
-parserCCCBeginWords=[]
+
 def trygetAddType(str):
     inStr = False
     defChars = ["+", "-", "=", "*", "/"]
@@ -201,20 +202,20 @@ def getType(value: str):
 def checkIfCharValid(str, list):
     for char in str:
 
-
         if char not in list:
             return False
     return True
 
 
-
-def creComp(optype,payload,requires=None):
-    return {"op": optype ,"payload":payload,"requires":requires}
+def creComp(optype, payload, requires=None):
+    return {"op": optype, "payload": payload, "requires": requires}
 
 
 class NewParser:
     def __init__(self, name="this."):
         self.name = name
+        self.tick_SCEDUE = []
+        self.load_SCEDUE = []
         self.tree = []
         self.file = FILE
         self.pointer = [0]
@@ -223,104 +224,103 @@ class NewParser:
         self.shorts = {}
         self.files = {}
         self.functionVariableScoreboards = []
-        self.ScoreboaRD_delete=""
+        self.ScoreboaRD_delete = ""
         self.funcs = {"main": []}
         self.func_takes = {}
         self.include = []
         self.str_func_def_block = ""
         self.special_ops_files = []
-        self.text=""
+        self.text = ""
         self.blocks = {"_include": [], "_jumper": "", "_funcvar": [], "_allVars": {}}
         # self.section= {}
 
-    def load(self,file=""):
-        if file=="":
+    def load(self, file=""):
+        if file == "":
             with open(self.file, "r") as f:
-                self.text += f.read().replace("  ","")
+                self.text += f.read().replace("  ", "")
         else:
             with open(file, "r") as f:
-                self.text += f.read().replace("  ","")
+                self.text += f.read().replace("  ", "")
 
     def parse(self):
 
-        insideString=False
-        escaped=False
-        linehasSimicolon=False
-        lineisEmpty=True
-        lineNum=1
-        inComment=False
-        stringOpendInLine=0
+        insideString = False
+        escaped = False
+        linehasSimicolon = False
+        lineisEmpty = True
+        lineNum = 1
+        inComment = False
+        stringOpendInLine = 0
 
-        for charNr,char in enumerate(self.text):
+        for charNr, char in enumerate(self.text):
 
             tree = self.getPoint()
-            if char not in [" ","\n"]:
-                lastchar=char
+            if char not in [" ", "\n"]:
+                lastchar = char
 
-            if (char!=" ")&(char!="\n")&(char not in ["{","}","[","]",";"]):
-                lineisEmpty=False
+            if (char != " ") & (char != "\n") & (char not in ["{", "}", "[", "]", ";"]):
+                lineisEmpty = False
 
+            if char == ";":
+                linehasSimicolon = True
 
-            if char==";":
-                linehasSimicolon=True
+            # if line BreakProcedure
 
-            #if line BreakProcedure
+            if ((self.text[charNr - 1] == "/") & (char == "/") & (not insideString) & (not inComment)):
+                print("Entered comment", bytes(self.text[charNr - 2], "UTF-8"))
+                if (not (self.text[charNr - 2] in "{}[]\n")):
 
-            if ((self.text[charNr - 1]== "/")&(char=="/")&(not insideString)&(not inComment)):
-                print("Entered comment",bytes(self.text[charNr-2],"UTF-8"))
-                if (not(self.text[charNr-2] in "{}[]\n")):
-
-                    if linehasSimicolon|lineisEmpty:
-                        lineisEmpty=True
-                        linehasSimicolon=False
+                    if linehasSimicolon | lineisEmpty:
+                        lineisEmpty = True
+                        linehasSimicolon = False
 
                     else:
-                        exeptions_.throwError.MissingSimicolon(lineNum-1)
+                        exeptions_.throwError.MissingSimicolon(lineNum - 1)
 
                 if insideString:
                     exeptions_.throwError.StringNeverClosedErr(stringOpendInLine)
-                inComment=True
-                self.section=self.section[:-2]
+                inComment = True
+                self.section = self.section[:-2]
 
-            if char=="\n":
+            if char == "\n":
 
                 lineNum += 1
                 if inComment:
                     print("LEntered comment")
 
-                    inComment=False
+                    inComment = False
                     continue
 
-                if (not(self.text[charNr-1] in "{}[]\n")):
+                if (not (self.text[charNr - 1] in "{}[]\n")):
 
-                    if linehasSimicolon|lineisEmpty:
-                        lineisEmpty=True
-                        linehasSimicolon=False
+                    if linehasSimicolon | lineisEmpty:
+                        lineisEmpty = True
+                        linehasSimicolon = False
 
                     else:
-                        print("com",char,)
-                        exeptions_.throwError.MissingSimicolon(lineNum-1)
+                        print("com", char, )
+                        exeptions_.throwError.MissingSimicolon(lineNum - 1)
 
                 if insideString:
                     exeptions_.throwError.StringNeverClosedErr(stringOpendInLine)
 
                 continue
             if inComment:
-                print("skipp ",char)
+                print("skipp ", char)
                 continue
             if ((char == "\"") | (char == "'")) & (not escaped):
-                stringOpendInLine=lineNum
+                stringOpendInLine = lineNum
 
                 insideString = not insideString
 
             if escaped:
                 escaped = False
             if (char == "\\") & insideString:
-                stringOpendInLine=lineNum
+                stringOpendInLine = lineNum
                 escaped = True
 
             if (((char == "{") | (char == "}") | (char == "(") | (char == ")") | (char == "[") | (char == "]") | (
-                    char == ";"))&(not insideString)):
+                    char == ";")) & (not insideString)):
 
                 if self.section != "":
                     # #print(self.section)
@@ -334,9 +334,6 @@ class NewParser:
                 self.section += str(char)
 
         self.form += self.section
-
-
-
 
     def toStruncktree(self):
         pass
@@ -382,16 +379,16 @@ class NewParser:
                     if enter:
                         sc = ""
                         between = []
-                        brackedStack="{"
-                        print("add")
+                        brackedStack = "{"
+                        # print("add")
                         while brackedStack != "":
                             if sc == "{":
                                 brackedStack += "{"
-                                print("add")
+                                # print("add")
 
                             if sc == "}":
                                 brackedStack = brackedStack[:-1]
-                                print("brackedstack")
+                                # print("brackedstack")
                                 if len(brackedStack) == 0:
                                     break
                             between += [self.form[pi]]
@@ -472,14 +469,15 @@ class NewParser:
                         handler = component["interface"]
                         if handler == "Nothing":
 
-                            paser_keywords_corespontents[kww] =  synt.replace("<<prName>>",projectName)
+                            paser_keywords_corespontents[kww] = synt.replace("<<prName>>", projectName)
                         else:
                             if kww not in paser_keywords_corespontents:
                                 paser_keywords_corespontents[kww] = "@C-had " + handler + " " + str(
                                     synt.count("%s")) + " " + synt
                             else:
-                                exeptions_.throwError.ccFileError(" <was trying to overwrite existing interface '" + kww + "'>",
-                                                       file)
+                                exeptions_.throwError.ccFileError(
+                                    " <was trying to overwrite existing interface '" + kww + "'>",
+                                    file)
 
             except KeyError:
                 exeptions_.throwError.ccFileError(" <missing link components>", file)
@@ -498,28 +496,34 @@ class NewParser:
             # #print("cw",self.funcs["main"])
             # #print(">>>",a)
 
-            self.blocks["nativeImport"]=[]
+            self.blocks["nativeImport"] = []
             if a.startswith("include"):
                 self.funcs["main"].remove(a)
-                l+=[a.replace("include","").replace(" ","")]
+                l += [a.replace("include", "").replace(" ", "")]
                 self.blocks["_include"] += [a.split(" ")[-1]]
 
-            if a.startswith("native"):
-                na+=[a.split(" ")[-1]]
+            elif a.startswith("native"):
+                na += [a.split(" ")[-1]]
+                self.funcs["main"].remove(a)
+            elif a.lower().startswith("@on-tick"):
+                self.tick_SCEDUE += [a.split(" ")[-1]]
+                self.funcs["main"].remove(a)
+            elif a.lower().startswith("@on-load"):
+                self.load_SCEDUE+=[a.split(" ")[-1]]
                 self.funcs["main"].remove(a)
 
-        return l,na
+        return l, na
 
     def functionexecutionBlock(self):
 
         for key in self.funcs.keys():
             if key == "main":
-                funcKey="main"
+                funcKey = "main"
             else:
-                funcKey=key
+                funcKey = key
             s = []
 
-            self.files[key]=[]
+            self.files[key] = []
 
             for line in self.funcs[funcKey]:
                 if line["payload"].replace(" ", "") != "":
@@ -552,7 +556,7 @@ class NewParser:
             for arg in argsN.split(","):
                 # print("args123",arg)
                 fc += "scoreboard players set #_mdb_" + arg + " _mdb_" + key + " 0\n"
-            self.ScoreboaRD_delete+="scoreboard objectives remove _mdb_" + key+"\n"
+            self.ScoreboaRD_delete += "scoreboard objectives remove _mdb_" + key + "\n"
             self.functionVariableScoreboards += [fc]
         # #print("bi",b)
         self.str_func_def_block = b
@@ -560,93 +564,117 @@ class NewParser:
     def creteMain(self):
         pass
 
-    def createFile(self,requires,includes):
+    def createFile(self, requires, includes):
         global projectName
         fx = ".mcfunction"
-        pathfunc="out/" + projectName + "/data/" + projectName + "/functions"
+        pathfunc = projectout+"/" + projectName + "/data/" + projectName + "/functions"
+        pathscedue = projectout+"/" + projectName + "/data/minecraft/tags/functions"
 
         if not os.path.exists(pathfunc):
             os.makedirs(pathfunc)
-        if not os.path.exists("out/" + projectName + "/pack.mcmeta"):
-            shutil.copyfile("templates/pack.png", "out/" + projectName + "/pack.png")
-            shutil.copyfile("templates/pack.mcmeta", "out/" + projectName + "/pack.mcmeta")
+        if not os.path.exists(pathscedue):
+            os.makedirs(pathscedue)
+        if not os.path.exists(projectout+"/" + projectName + "/pack.mcmeta"):
+            shutil.copyfile("templates/pack.png", projectout+"/" + projectName + "/pack.png")
+            shutil.copyfile("templates/pack.mcmeta", projectout+"/" + projectName + "/pack.mcmeta")
 
-        with open("out/" + projectName+"/" + "general.info", "w") as f:
-            s="Created with ...\n" \
-              "Version 1.0.1\n" \
-              "\n" \
-              "---Native-Module Imports---\n"
+        print(self.tick_SCEDUE,self.load_SCEDUE,self.funcs.keys())
+        tick_scedue=[]
+        for e in self.tick_SCEDUE:
+
+            if not "this."+e in self.funcs.keys():
+                exeptions_.throwError.functionforseduenotdefined(e,"tick")
+            else:
+                tick_scedue+=[projectName+":_mbd_"+e+"_"]
+
+        load_scedue=[projectName+":_mbd_main_",projectName+":_mbd_scoreboards"]
+        for e in self.load_SCEDUE:
+            if not "this."+e in self.funcs.keys():
+                exeptions_.throwError.functionforseduenotdefined(e,"load")
+            else:
+                load_scedue+=[projectName+":_mbd_"+e+"_"]
+
+        with open(pathscedue+"/tick.json","w") as f:
+            json.dump({"values":tick_scedue},f)
+
+        with open(pathscedue+"/load.json","w") as f:
+            json.dump({"values":load_scedue},f)
+
+
+
+        with open(projectout+"/" + projectName + "/" + "general.info", "w") as f:
+            s = "Created with Mine-Dash-bin\n" \
+                "Version 0.9.2\n" \
+                "\n" \
+                "---Native-Module Imports---\n" \
 
 
 
             f.write(s)
 
-
             for i in requires:
-                f.write(i+"\n")
+                f.write(i + "\n")
             f.write("---Module Imports---\n")
             for i in includes:
                 f.write(i)
-        with open(pathfunc+ "/_mbd_scoreboards" + fx, "w") as f:
+        with open(pathfunc + "/_mbd_scoreboards" + fx, "w") as f:
             for a in self.functionVariableScoreboards:
                 f.write(a)
 
-        with open(pathfunc+ "/routine_del_cleanup" + fx, "w") as f:
+        with open(pathfunc + "/routine_del_cleanup" + fx, "w") as f:
 
             f.write(self.ScoreboaRD_delete)
-        #print("keys", self.files)
+        # print("keys", self.files)
         for a in self.files.keys():
 
             with open(pathfunc + "/_mbd_" + a.replace("this.", "") + "_" + fx, "w") as f:
                 # a is the filename
 
-                if type(self.files[a])==list:
-                    #print("skipp")
+                if type(self.files[a]) == list:
+                    # print("skipp")
                     continue
                 f.write(self.files[a])
 
-
-            #print("requires",requires)
+            # print("requires",requires)
         for filep in requires:
-            p="templates/baselib/"+filep
-            if os.path.exists(filep+".mcfunction"):
-                #print("copied",filep)
-                shutil.copyfile(filep+".mcfunction",pathfunc+"/"+filep.split("/")[-1]+".mcfunction")
-            elif os.path.exists(p+".mcfunction"):
-                #print("copied",filep)
-                shutil.copyfile(p+".mcfunction",pathfunc+"/"+filep.split("/")[-1]+".mcfunction")
+            p = "templates/baselib/" + filep
+            if os.path.exists(filep + ".mcfunction"):
+                # print("copied",filep)
+                shutil.copyfile(filep + ".mcfunction", pathfunc + "/" + filep.split("/")[-1] + ".mcfunction")
+            elif os.path.exists(p + ".mcfunction"):
+                # print("copied",filep)
+                shutil.copyfile(p + ".mcfunction", pathfunc + "/" + filep.split("/")[-1] + ".mcfunction")
             else:
                 exeptions_.throwError.nativeModulerNotFound(filep)
 
     def identify_ops(self):
         nextOPConditon = None
-        conditionStack=[]
-        def newComp(optype,payload):
+        conditionStack = []
+
+        def newComp(optype, payload):
             nonlocal nextOPConditon
-            print("condition",conditionStack)
-            cond=None
-            if conditionStack!=[]:
-                cond=""
+            # print("condition",conditionStack)
+            cond = None
+            if conditionStack != []:
+                cond = ""
                 for c in conditionStack:
-                    cond+=c
-            r=creComp(optype,payload,requires=cond)
+                    cond += c
+            r = creComp(optype, payload, requires=cond)
             nextOPConditon = None
             return r
+
         def checkConditionClose(char):
             nonlocal conditionStack
-            if char=="}":
+            if char == "}":
                 conditionStack.pop(-1)
-
-
 
         for ins in range(0, len(self.funcs.keys())):
             key = list(self.funcs.keys())[ins]
             lineList = self.funcs[key]
             newList = []
-            nextOPConditon=None
+            nextOPConditon = None
             # newList += ["@fc "]
             li = -1
-
 
             while li in range(-1, len(lineList) - 1):
                 li += 1
@@ -658,7 +686,7 @@ class NewParser:
                 Slist = re.split(",|=| ", fs)
                 # print("<<< ",Slist)
                 # #print(Slist)
-                #print(Slist,minecraft_commands.count(Slist[0]),minecraft_commands)
+                # print(Slist,minecraft_commands.count(Slist[0]),minecraft_commands)
 
                 if "this." + Slist[0] in self.funcs.keys():
                     ##print(f"{Slist[0]} is a function")
@@ -673,73 +701,74 @@ class NewParser:
                     if (pi > 9999):
                         exeptions_.throwError.parameterLimitReched(li)
                     li += pi - 1
-                    newList+=[newComp("@fc","this." + Slist[0] + " " + str(pi) + " " + args[1:-2])]
-                    #newList += ["@fc this." + Slist[0] + " " + str(pi) + " " + args[1:-2]]
+                    newList += [newComp("@fc", "this." + Slist[0] + " " + str(pi) + " " + args[1:-2])]
+                    # newList += ["@fc this." + Slist[0] + " " + str(pi) + " " + args[1:-2]]
                     ##print(Slist[0], args[1:-2])
 
-                elif Slist[0]=="}":
-                    conditionStack.pop(-1)
+                elif Slist[0] == "}":
+                    try:
+                        conditionStack.pop(-1)
+                    except IndexError:
+                        exeptions_.throwError.BrackedNeverClosed(li)
                 elif key + "." + Slist[0] in self.blocks["_funcvar"]:
 
-                    newList += [newComp("@v-f" , lineList[li])]
+                    newList += [newComp("@v-f", lineList[li])]
                     pass
 
                 elif (Slist[0] in minecraft_commands):
 
-                    newList +=[newComp("@nai",lineList[li])]
+                    newList += [newComp("@nai", lineList[li])]
                 elif Slist[0].startswith("#if"):
-                    nextOPConditon=lineList[li]
+                    nextOPConditon = lineList[li]
                     continue
                 elif Slist[0].startswith("if"):
 
-                    strind=0
-                    condition=""
+                    strind = 0
+                    condition = ""
 
                     string = self.funcs[key][li]
-                    print(strind,string)
-                    while self.funcs[key][li]!="(":
+                    # print(strind,string)
+                    while self.funcs[key][li] != "(":
+                        li += 1
 
-                        li+=1
-
-                        #string = self.funcs[key][li]
-                    st=self.funcs[key][li]
-                    while  st!=")":
-                        li+=1
+                        # string = self.funcs[key][li]
+                    st = self.funcs[key][li]
+                    while st != ")":
+                        li += 1
                         st = self.funcs[key][li]
-                        condition+=st
+                        condition += st
                     while st != "{":
                         li += 1
                         st = self.funcs[key][li]
 
-
-                    print("cont",condition)
-                    if condition[-1]==")":
-                        condition=condition[:-1]
-                    conditionStack+=[condition]
+                    # print("cont",condition)
+                    if condition[-1] == ")":
+                        condition = condition[:-1]
+                    conditionStack += [condition]
 
 
                 elif Slist[0].startswith("#req"):
-                    nextOPConditon=lineList[li]
+                    nextOPConditon = lineList[li]
                 elif Slist[0].startswith("#event"):
-                    #todo:events like on load on tick
+                    # todo:events like on load on tick
                     continue
-                elif Slist[0].startswith("shr"):#
+                elif Slist[0].startswith("shr"):  #
 
-                    shl=list_remove_empty(getStringSeperated(string))
-                    print("fjkopredjfds",shl)
-                    le=len(shl)
+                    shl = list_remove_empty(getStringSeperated(string))
+                    # print("fjkopredjfds",shl)
+                    le = len(shl)
 
-                    if le!=3:
+                    if le != 3:
                         exeptions_.throwError.schortGivenToMuchArgs(string)
                     else:
-                        kww,name,short=shl
-                        self.shorts[name.replace(" ","")]=short
+                        kww, name, short = shl
+                        self.shorts[name.replace(" ", "")] = short
                 elif Slist[0].startswith("inject"):
 
-                    newList += [newComp("@inj" , lineList[li][7:])]
+                    newList += [newComp("@inj", lineList[li][7:])]
 
                 elif Slist[0].startswith("<") & Slist[0].endswith(">"):
-                    print("add",lineList[li])
+                    # print("add",lineList[li])
                     newList += [newComp("@inj-shrline", lineList[li])]
 
                 elif ((len(fs) > len(Slist[0]))):
@@ -764,14 +793,15 @@ class NewParser:
                             else:
                                 setVar += "$" + e[1] + " "
 
-                        newList += [newComp("@v-l" , setVar + typeofVAR)]
+                        newList += [newComp("@v-l", setVar + typeofVAR)]
 
                         if name not in self.blocks["_allVars"]:
                             self.blocks["_allVars"][name] = Slist[1]
 
 
 
-                    elif (Slist[0].split(" ")[0] in paser_keywords_corespontents.keys()): #todo : implement new cc system #migration
+                    elif (Slist[0].split(" ")[
+                              0] in paser_keywords_corespontents.keys()):  # todo : implement new cc system #migration
                         # print("--")
                         # print()
                         # print(Slist)
@@ -781,12 +811,13 @@ class NewParser:
                             line = []
                             line += Slist
                             line.pop(0)
-                            placein=list_remove_empty(getStringSeperated((fs.split(" ",1)[1])))
-                            countkww=len(placein)
-                            #print(countkww,placein,paser_keywords_corespontents[Slist[0]],fs)
-                            counttakes=paser_keywords_corespontents[Slist[0]].count("%s")
+                            placein = list_remove_empty(getStringSeperated((fs.split(" ", 1)[1])))
+                            countkww = len(placein)
+                            # print(countkww,placein,paser_keywords_corespontents[Slist[0]],fs)
+                            counttakes = paser_keywords_corespontents[Slist[0]].count("%s")
 
-                            newList += [newComp("@cc-inj",paser_keywords_corespontents[Slist[0]] % tuple(i for i in placein))]
+                            newList += [
+                                newComp("@cc-inj", paser_keywords_corespontents[Slist[0]] % tuple(i for i in placein))]
 
                         except Exception as e:
 
@@ -800,14 +831,14 @@ class NewParser:
                             continue
                         elif Slist[0].startswith("I..I"):
                             continue
-                        #print("operator","'"+str(Slist)+"'")
-                        if Slist[0]=="":
+                        # print("operator","'"+str(Slist)+"'")
+                        if Slist[0] == "":
                             exeptions_.throwError.indexiationError(string, "?")
 
                         exeptions_.throwError.unknownOperator(Slist[0], "?")
                 else:
 
-                    exeptions_.throwError.unableToUnderstandInstrucktion(string,"?")
+                    exeptions_.throwError.unableToUnderstandInstrucktion(string, "?")
                     pass
                     """
                     try:
@@ -818,9 +849,10 @@ class NewParser:
                     ##print("line", key + "." + Slist[0], self.blocks["_funcvar"])"""
                 del Slist, fs
             self.funcs[key] = newList
-    def removeStringIdentifier(self,str1:str,prefixignore="i"):
-        if str1.startswith("\"")|str1.startswith("'"):
-            str1=str1[1:]
+
+    def removeStringIdentifier(self, str1: str, prefixignore="i"):
+        if str1.startswith("\"") | str1.startswith("'"):
+            str1 = str1[1:]
             if str1.endswith("\"") | str1.endswith("'"):
                 str1 = str1[:-1]
         elif str1.startswith(prefixignore):
@@ -829,17 +861,16 @@ class NewParser:
 
         return str1
 
-    def replaceShort(self,line):
-        str1list=getStringSeperated(line,False)
-        ret=""
+    def replaceShort(self, line):
+        str1list = getStringSeperated(line, False)
+        ret = ""
         for item in str1list:
-            if not(item.startswith("\"")|item.startswith("'")):
+            if not (item.startswith("\"") | item.startswith("'")):
                 for short in self.shorts.keys():
 
-                    if item.count("<"+short+">")>0:
-
-                        item=item.replace("<"+short+">",self.removeStringIdentifier(self.shorts[short]))
-            ret+=item
+                    if item.count("<" + short + ">") > 0:
+                        item = item.replace("<" + short + ">", self.removeStringIdentifier(self.shorts[short]))
+            ret += item
         return ret
 
     def Variabels_mine_format(self):
@@ -850,43 +881,39 @@ class NewParser:
             o.write("----"+f+"-----\n")
             o.write(self.files[f])
         o.close()"""
-        print("allfuncs",list(self.files.keys()))
+        # print("allfuncs",list(self.files.keys()))
         for filename in list(self.files.keys()):
 
-
             old_lines = self.files[filename]
-            print(old_lines,filename)
+            # print(old_lines,filename)
             filename = filename.replace("this.", "")
             formatedLines = ""
             linePointer = 0
             allLines = old_lines
-            lastrequires=""
-            prefix=""
+            lastrequires = ""
+            prefix = ""
             while linePointer < len(old_lines):
-                #print("spm",allLines[linePointer],type(allLines[linePointer]))
+                # print("spm",allLines[linePointer],type(allLines[linePointer]))
                 opX = allLines[linePointer]["op"]
-                requires=allLines[linePointer]["requires"]
-
-
+                requires = allLines[linePointer]["requires"]
 
                 line = self.replaceShort(allLines[linePointer]["payload"])
-                print("shr",self.shorts)
-                #print(opX)
-                print("prfix9", requires,allLines[linePointer])
-                if requires!=None:
-
+                # print("shr",self.shorts)
+                # print(opX)
+                # print("prfix9", requires,allLines[linePointer])
+                if requires != None:
 
                     try:
-                        prefix=""
-                        print("contsep",getStringSeperated(requires,False))
-                        for e in getStringSeperated(requires,False):
-                            if e=="":
+                        prefix = ""
+                        # print("contsep",getStringSeperated(requires,False))
+                        for e in getStringSeperated(requires, False):
+                            if e == "":
                                 continue
-                            if (not e.startswith("\""))|(not e.startswith("\'")):
-                                e=self.replaceShort(e)
-                            prefix += self.removeStringIdentifier(e)+" "
-                        prefix=prefix.replace("  "," ")
-                        print("prfix",prefix,"")
+                            if (not e.startswith("\"")) | (not e.startswith("\'")):
+                                e = self.replaceShort(e)
+                            prefix += self.removeStringIdentifier(e) + " "
+                        prefix = prefix.replace("  ", " ")
+                        # print("prfix",prefix,"")
                     except:
                         exeptions_.throwError.invalidIfinstucktion(requires)
                         """ elif requires.startswith("#if"):if requires.startswith("#req"):
@@ -905,25 +932,24 @@ class NewParser:
                             """
 
                 else:
-                    prefix=""
-                    lastrequires=""
-
+                    prefix = ""
+                    lastrequires = ""
 
                 linePointer += 1
 
-                if opX=="@v-l":
-                    print("")
-                    print("varfounf",line)
+                if opX == "@v-l":
+                    # print("")
+                    # print("varfounf",line)
 
                     ls = line.split(" ")
 
-                    #print("val",ls)
+                    # print("val",ls)
                     sc_name = ls[0].replace("this.", "")
                     operation = ls[1].replace("$", "")
                     add_to_sc = ls[2].replace("this.", "")
 
                     sc_type = ls[3]
-                    print(sc_name,operation,add_to_sc,sc_type,opX)
+                    # print(sc_name,operation,add_to_sc,sc_type,opX)
                     l = ""
                     if operation != "=":
 
@@ -955,32 +981,32 @@ class NewParser:
                         else:
 
                             l = ""
-                    print(l)
-                    formatedLines += prefix+l + "\n"
-                elif opX=="@inj":
+                    # print(l)
+                    formatedLines += prefix + l + "\n"
+                elif opX == "@inj":
 
-                    formatedLines+=prefix+self.removeStringIdentifier(line[6:])+"\n"
-                elif opX=="@inj-shrline":
+                    formatedLines += prefix + self.removeStringIdentifier(line[6:]) + "\n"
+                elif opX == "@inj-shrline":
 
-                    formatedLines+=prefix+(self.removeStringIdentifier(line))+"\n"
-                elif opX=="@nai":
-                    formatedLines+=prefix+line+"\n"
-                elif opX=="@cc-inj":
-                    formatedLines+=prefix+line+"\n"
+                    formatedLines += prefix + (self.removeStringIdentifier(line)) + "\n"
+                elif opX == "@nai":
+                    formatedLines += prefix + line + "\n"
+                elif opX == "@cc-inj":
+                    formatedLines += prefix + line + "\n"
 
-                elif opX=="@fc":
-                    #print("funccall",line)
+                elif opX == "@fc":
+                    # print("funccall",line)
                     ls = line.split(" ", 6)
-                    #print("search",ls)
+                    # print("search",ls)
 
-                    #print("ls",ls)
+                    # print("ls",ls)
                     funcName = ls[0].replace("this.", "")
 
                     args = ls[3]
 
-                    argsCount=args.count(",")+1
-                    if args.replace(" ","")=="":
-                        argsCount=0
+                    argsCount = args.count(",") + 1
+                    if args.replace(" ", "") == "":
+                        argsCount = 0
 
                     sc_type = ls[3].replace(" ", "")
 
@@ -988,32 +1014,29 @@ class NewParser:
                     try:
                         takescount, takesargs = self.func_takes["this." + funcName]
                     except:
-                        #print(line)
+                        # print(line)
                         exeptions_.throwError.functionDoesntExist(funcName)
                         return "END_OF_PROGRAM_BY_EXCEPTION"
-                    takesargsSplit=takesargs.split(",")
-                    #print(funcName,int(argsCount), takescount)
+                    takesargsSplit = takesargs.split(",")
+                    # print(funcName,int(argsCount), takescount)
                     if int(argsCount) != takescount:
-
-
-                        #print(type(argsCount),type(takescount),line)
+                        # print(type(argsCount),type(takescount),line)
                         exeptions_.throwError.parameterCountNotMacking(funcName, takescount, argsCount)
 
                     for n, var in enumerate(args.split(",")):
                         varname = "self.func_takes"
                         vartype = getType(var)
 
-                        ins = creComp("@v-l",f".{funcName}.{takesargsSplit[n]} $= .{var} {vartype}",requires=requires)
-
+                        ins = creComp("@v-l", f".{funcName}.{takesargsSplit[n]} $= .{var} {vartype}", requires=requires)
 
                         allLines.insert(linePointer + n, ins)
 
-                    formatedLines += prefix+"schedule function " + projectName + ":_mbd_" + funcName + " 1t\n"
+                    formatedLines += prefix + "schedule function " + projectName + ":_mbd_" + funcName + " 1t\n"
 
 
                 else:
 
-                    if opX=="I..I":
+                    if opX == "I..I":
                         # print(line)
                         if opX == "I..I":
                             strlist = getStringSeperated(s, False)
@@ -1032,16 +1055,18 @@ class NewParser:
 
                             formatedLines += line
                     else:
-                        print("rejected",line,opX)
+                        pass
+                        # print("rejected",line,opX)
 
-            if filename!="main":
-                self.files["this."+filename] = formatedLines
+            if filename != "main":
+                self.files["this." + filename] = formatedLines
             else:
                 self.files[filename] = formatedLines
-        print(self.files)
+        # print(self.files)
 
-includes=[]
-requires=[]
+
+includes = []
+requires = []
 start_time = time.time()
 try:
     print("Starting...")
@@ -1059,16 +1084,14 @@ try:
             else:
                 exeptions_.throwError.ModuleNotFound(incl)
 
-
         p.parse()
-        #p.wr()
+        # p.wr()
         p.toCode()
-        includesNew, requiresNew=p.createBlockInclude()
+        includesNew, requiresNew = p.createBlockInclude()
 
-        if (includesNew==includes)and(requiresNew==requires):
-
+        if (includesNew == includes) and (requiresNew == requires):
             break
-        includes,requires = includesNew,requiresNew
+        includes, requires = includesNew, requiresNew
     print("Compiling-Started...")
     p.createFuncBlock()
     p.initializeCompileReferenceKeywords()
@@ -1083,14 +1106,13 @@ try:
         parserCCCBeginWords+=paser_keywords_corespontents[key].split(" ")[0]"""
     print("Converting to mcfunction format...")
     p.Variabels_mine_format()
-    print("Safing to file...")
-    p.createFile(requires,includes)
+    print("Saving to file...")
+    p.createFile(requires, includes)
 
     end_time = time.time()
-    print("Finished after",round(end_time-start_time,6)*1000,"ms")
+    print("Finished after", round(end_time - start_time, 6) * 1000, "ms")
     e = time.time()
     time.sleep(0.001)
 
 except OSError as e:
     exeptions_.throwError.CompilationError(e)
-

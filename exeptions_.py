@@ -97,5 +97,10 @@ class throwError:
 
     @staticmethod
     def variableNotdeclarated_Error(var):
-        print(f"Err (C:020): Variable was never initialized '{func}' ")
+        print(f"Err (C:020): Variable was never initialized '{var}' ")
+        ex()
+
+    @staticmethod
+    def functionforseduenotdefined(name,case):
+        print(f"Err (C:021): {case}-seduce function '{name}' has never been declared")
         ex()
