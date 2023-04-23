@@ -50,14 +50,10 @@
 > 
 > ## If statements --------------------------------
 > #### Functions later get compiled into alone-standing `.mcfunction` files but you can write them all in one file
-> * **Keyword :** `#req` or `#if`(coming soon)
-> * **Usage** : `#req statement`
-> * **What does it do ?** : #req sets the given condition as the prefix for the next line to execute (especially recommend for functionsCals)
+> * **Keyword :** `if`
+> * **Usage** : `if("execute if sting"){body}`
+> * **What does it do ?** : wraps arount condition and provides 0-tick conditional execution to the if-body
 > 
-> ### Future
-> * its work in progress to add the `#if` statement that lets you evaluate variables
-
-
 
 ## Hope you have Fun ; ) 
 

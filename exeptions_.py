@@ -104,3 +104,8 @@ class throwError:
     def functionforseduenotdefined(name,case):
         print(f"Err (C:021): {case}-seduce function '{name}' has never been declared")
         ex()
+
+    @staticmethod
+    def unknownShort(sh):
+        print(f"Err (C:022): Unknown Short '{sh}'  ")
+        ex()

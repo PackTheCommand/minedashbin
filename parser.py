@@ -28,6 +28,7 @@ Seti = setings.Settings("settings.json")
 def create_project():
     name = input("Project Name: ")
     sourcefile = input("Main file: ")
+    outputfile = input("OutputPath (leave blank for default): ")
 
     print("Project Name: " + name + " ,Source File: " + sourcefile)
     yn = input("Create project? (y/n)")
@@ -38,7 +39,7 @@ def create_project():
             r = random.randint(1, 9999999)
 
         print("creating files")
-        Seti.get("All-Projects")[r] = {"name": name, "source": sourcefile}
+        Seti.get("All-Projects")[r] = {"name": name, "source": sourcefile,"out":outputfile}
 
         yn = input("Set as Current Project ? (y/n)")
         if yn == "y":
@@ -578,7 +579,7 @@ class NewParser:
             shutil.copyfile("templates/pack.png", projectout+"/" + projectName + "/pack.png")
             shutil.copyfile("templates/pack.mcmeta", projectout+"/" + projectName + "/pack.mcmeta")
 
-        print(self.tick_SCEDUE,self.load_SCEDUE,self.funcs.keys())
+
         tick_scedue=[]
         for e in self.tick_SCEDUE:
 
@@ -633,7 +634,7 @@ class NewParser:
                 if type(self.files[a]) == list:
                     # print("skipp")
                     continue
-                f.write(self.files[a])
+                f.write(self.replaceShort(self.files[a]))
 
             # print("requires",requires)
         for filep in requires:
@@ -871,6 +872,33 @@ class NewParser:
                     if item.count("<" + short + ">") > 0:
                         item = item.replace("<" + short + ">", self.removeStringIdentifier(self.shorts[short]))
             ret += item
+        # check for invalid short
+        string=""
+        qshort=""
+        inQshort=""
+        existingshorts=list(self.shorts.keys())
+        for char in line:
+            if char=="<":
+                inQshort=True
+            elif char in "= |()[]{}/":
+                string+=qshort+char
+                qshort=""
+                inQshort=False
+
+            elif char==">":
+                if inQshort:
+                    if qshort[1:] not in existingshorts:
+
+                        exeptions_.throwError.unknownShort(qshort[1:])
+
+                string += qshort + char
+                qshort = ""
+                inQshort = False
+            if inQshort:
+                qshort+=char
+
+            string+=char
+
         return ret
 
     def Variabels_mine_format(self):

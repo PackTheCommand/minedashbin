@@ -3,7 +3,8 @@
 cc minebase;
 p=1;
 tz=2;
-
+include pointer/pointer;
+include shr/ifs;
 setblock 1 1 1 dirt;
 func empty(){
 
@@ -19,7 +20,7 @@ execute as <Entity> at @s run;
 say te;
 d= p;
 myfunc(1,1,1,1);
-#req "execute if a==b";
+
 tls(1,1,1,1);
 
 }

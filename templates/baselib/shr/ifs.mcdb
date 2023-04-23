@@ -3,7 +3,7 @@ shr dimensionIsNether "execute if dimension minecraft:the_nether run";
 shr dimensionIsEnd "execute if dimension minecraft:the_end run";
 shr WeatherRain "weather rain";
 shr WeatherClear "weather rain";
-shr WeatherThunder "weather thunder";#
-shr KillAllEntities "kill @e"
-shr KillAllPlayers "kill @a"
-shr 
+shr WeatherThunder "weather thunder";
+shr KillAllEntities "kill @e";
+shr KillAllPlayers "kill @a";
+

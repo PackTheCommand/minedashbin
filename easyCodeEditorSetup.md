@@ -1,12 +1,11 @@
-## For jetbrains
+# For jetbrains
 >filetypes:
 > *   *.mcdb
 > *   *.mcdblib
 > 
 ## keywords (everywere were a space is add a line braek):
 > 1:
-#if
-#req
+if 
 > 
 > 
 > 2:
