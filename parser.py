@@ -25,13 +25,19 @@ from sys import argv
 Seti = setings.Settings("settings.json")
 
 
-def create_project():
-    name = input("Project Name: ")
-    sourcefile = input("Main file: ")
-    outputfile = input("OutputPath (leave blank for default): ")
+def create_project(name=None,sourcefile=None,outputfile=None,sccrete=False):
+    if not name:
+        name = input("Project Name: ")
+    if not sourcefile:
+        sourcefile = input("Main file: ")
+    if not outputfile:
+        outputfile = input("OutputPath (leave blank for default): ")
 
     print("Project Name: " + name + " ,Source File: " + sourcefile)
-    yn = input("Create project? (y/n)")
+    if not sccrete=="y":
+        yn = input("Create project? (y/n)")
+    else:
+        yn=sccrete
     if yn == "y":
 
         r = random.randint(1, 9999999)
@@ -39,12 +45,16 @@ def create_project():
             r = random.randint(1, 9999999)
 
         print("creating files")
-        Seti.get("All-Projects")[r] = {"name": name, "source": sourcefile,"out":outputfile}
+        Seti.get("All-Projects")[str(r)] = {"name": name.lower(), "source": sourcefile,"out":outputfile}
+        if not sccrete:
+            yn = input("Set as Current Project ? (y/n)")
 
-        yn = input("Set as Current Project ? (y/n)")
         if yn == "y":
+                Seti.set("Current-Project", str(r))
+                Seti.save()
+        elif sccrete:
             Seti.set("Current-Project", str(r))
-        Seti.save()
+            Seti.save()
 
 
 def getIfinstructParts(string: str) -> tuple[list[str, str, str], list[str, str]]:
@@ -73,10 +83,14 @@ def getIfinstructParts(string: str) -> tuple[list[str, str, str], list[str, str]
 
     return (fl, types)
 
-
+import setupUi
 if len(argv) >= 2:
     if "--new" in argv:
         create_project()
+
+    if "--prui" in argv:
+        r=setupUi.open()
+        create_project(*r,"y")
     for s in argv:
         if s.startswith("--project"):
             u, p = s.split("=", 1)
@@ -92,7 +106,9 @@ if Seti.get("All-Projects") == {}:
     print("Error:", "No project found, specify a project with '--new'")
     exit()
 
+print("project",Seti.get("All-Projects"),Seti.get("Current-Project"))
 projectName = Seti.get("All-Projects")[Seti.get("Current-Project")]["name"]
+
 projectout = Seti.get("All-Projects")[Seti.get("Current-Project")]["out"]
 
 FILE = Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]

@@ -10,7 +10,7 @@ from tkinter.ttk import Separator
 from PIL import Image, ImageTk,ImageColor,ImageGrab
 
 
-from staticPy import Collor
+from .staticPy import Collor
 
 """
 fr = Tk()
@@ -31,7 +31,7 @@ class Window(Tk):
     def __init__(self,**kwargs):
         self.updateable = {}
         Tk.__init__(self,**kwargs)
-        self.win=Frame(master=self)
+        self.win=Frame(master=self,bg=Collor.bg)
         self.win.place(x=0,y=0)
         self.notifications=[]
         self.defaultFont = tkfont.nametofont("TkDefaultFont")
@@ -41,6 +41,7 @@ class Window(Tk):
         self.bind("<Configure>",self.__updateInerFrame)
         self.__updateInerFrame()
         style=ttk.Style()
+
         style.configure('TSeparator', foreground=Collor.fg)
 
     def __updateInerFrame(self,n=None):
@@ -701,6 +702,7 @@ class ScroledTextBox(Text):
         return "break"
 
     def setValue(self, text):
+
         self.clear()
 
         self.insert("0.0", text)
@@ -714,9 +716,10 @@ class ScroledTextBox(Text):
 
 
 class TextBox(Text):
-    def __init__(self, max_lines, width2=0, start=None, disable_height_change=True, **kw):
-        font_size_medium = tkfont.Font(family="Bahnschrift", size=12, weight="bold")
-        super().__init__(bg=Collor.bg_darker, fg=Collor.fg, font=font_size_medium, **kw)
+    def __init__(self, max_lines=1, width2=0, start=None, disable_height_change=True,font=None, **kw):
+        if font==None:
+            font=tkfont.Font(family="Bahnschrift", size=12, weight="bold")
+        super().__init__(bg=Collor.bg_darker, fg=Collor.fg, font=font, **kw)
         self.bind("<Return>", self.e)
         self.widthNum = width2
         self.max_lines = max_lines
@@ -733,9 +736,20 @@ class TextBox(Text):
     def e(self, u):
         return "break"
 
+
     def setValue(self, text):
-        self.clear()
-        self.insert("0.0", text)
+        print(self['state'], "ferw")
+        if self['state'] == "disabled":
+
+            self.clear()
+            self["state"] = "normal"
+            self.insert("0.0", text)
+            self.event_generate("<<ValueChange>>")
+            self["state"] = "disabled"
+        else:
+            self.clear()
+            self.insert("0.0", text)
+            self.event_generate("<<ValueChange>>")
 
     def updateHeight(self):
         le = len(self.getValue())
@@ -766,6 +780,86 @@ class TextBox(Text):
 
     def addValueAtEnd(self, value):
         self.insert(tkinter.END, value)
+
+
+class ModernNotebook(ttk.Notebook):
+    def __init__(self,disableTabSelection=False,**kwwargs):
+
+        super(ModernNotebook, self).__init__(**kwwargs)
+
+        self.disableTabSelection =disableTabSelection
+        self.list = []
+        self.pointer = 0
+
+        style = ttk.Style(self)
+        style.theme_use("clam")
+        print(style.element_names(), "\n", style.element_options("tab"))
+        style.configure("TNotebook", tabmargins=0, background=Collor.bg, borderwidth=0, margin=20, padding=[5, 1],
+                        highlightbackground="red",  # foreground="red",
+                        lightcolor=Collor.selector_none, bordercolor=Collor.bg,
+                        darkcolor=Collor.selector_none)
+
+        style.map("TNotebook.Tab",
+                  background=[("selected", Collor.selector_is), ("!selected", Collor.selector_none),
+                              ("active", Collor.bg), ("alternate", Collor.bg), ("alternate", Collor.bg)],
+
+                  expand=[("selected", Collor.bg)], highlightcolor=[('focus', 'red'),
+                                                                    ('!focus', 'red')],
+                  bordercolor=[("selected", Collor.selector_none), ("!selected", Collor.bg)]
+                  , lightcolor=[("selected", Collor.selector_none), ("!selected", Collor.bg)])
+
+        style.configure("TEntry", tabmargins=0, background=Collor.bg, borderwidth=0, margin=20, padding=[5, 1],
+                        highlightbackground="red",  # foreground="red",
+                        lightcolor=Collor.selector_none, bordercolor=Collor.bg,
+                        darkcolor=Collor.selector_none)
+
+        style.map("TEntry",
+                  background=[("selected", Collor.selector_is), ("!selected", Collor.selector_none),
+                              ("active", Collor.bg),
+                              ("alternate", Collor.bg), ("alternate", Collor.bg)],
+
+                  expand=[("selected", Collor.bg)], highlightcolor=[('focus', 'red'),
+                                                                    ('!focus', 'red')],
+                  bordercolor=[("selected", Collor.selector_none), ("!selected", Collor.bg)]
+                  , lightcolor=[("selected", Collor.selector_none), ("!selected", Collor.bg)])
+
+    def __update_disabledState(self):
+        for n,tab in enumerate(self.list):
+            if self.disableTabSelection:
+                self.tab(n,state="disabled")
+            else:
+                self.tab(n,state="normal")   #states= normal, disabled, or hidden
+
+    def addframe(self,frame)->int:
+
+        self.list.append(frame)
+        self.add(frame)
+        index=len(self.list)-1
+
+
+        return index
+    def nav(self,index):
+        self.pointer = index
+        self.__update_disabledState()
+        self.tab(self.pointer,state="normal")
+        self.select(self.list[index])
+
+
+    def forward(self):
+        self.__update_disabledState()
+        if self.pointer < len(self.list) - 1:
+            self.pointer += 1
+            self.tab(self.pointer, state="normal")
+            self.select(self.list[self.pointer])
+
+    def backward(self):
+
+        if self.pointer > 0:
+            self.pointer -= 1
+            self.__update_disabledState()
+            self.tab(self.pointer, state="normal")
+            self.select(self.list[self.pointer])
+
 class ScrollableFrame(Frame):
     def __init__(self,width=100,height=100,bg=Collor.bg,**kw):
 
