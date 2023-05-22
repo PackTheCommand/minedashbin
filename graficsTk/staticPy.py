@@ -50,17 +50,20 @@ class Settings:
         return False
 
 
-Seti = Settings("uiSettings.json")
+Seti = Settings("../settings.json")
 mode = Seti.get("mode")
 
 
 class Collor():
+    ChatBuble="#175676"
     transparency_color ="#ff00f2"
     Error="#D7263D"
     Warn="#FFB800"
     Attention= "#E4FF1A"
     Success= "#44AF69"#6EEB83
     Neutral= "#1BE7FF"
+    Ice="#1B98E0"
+    Polar="#E8F1F2"
 
     if mode == "dark":
         bg = "#232327"
@@ -68,7 +71,7 @@ class Collor():
         fg = "#c0c0c0"
         highlight="#2B9EB3"
         info = "#157145"
-        bg_lighter="#212121"
+        bg_lighter="#515151"
         fg_inverted = "#161616"
         selector_none="#2A6780"
         selector_is="#247BA0"
@@ -83,7 +86,7 @@ class Collor():
         fg = "#D7CACD"
         highlight = "#F15152"
         info = "#157145"
-        bg_lighter = "#212121"
+        bg_lighter = "#515151"
         fg_inverted = "#161616"
         selector_none = "#81171B"
         selector_is = "#AD2E24"
@@ -98,7 +101,7 @@ class Collor():
         fg = "#E1F2FE"
         highlight = "#23CE6B"
         info = "#157145"
-        bg_lighter = "#212121"
+        bg_lighter = "#515151"
         fg_inverted = "#161616"
         selector_none = "#297045"
         selector_is = "#3BC14A"

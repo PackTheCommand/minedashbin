@@ -1,5 +1,6 @@
+import random
 import tkinter
-import tkinter.font
+
 from tkinter import Canvas, Tk, Frame, Label, Scale, Button, Text, END
 from tkinter import ttk ,font as tkfont
 
@@ -7,8 +8,7 @@ import math
 from tkinter.ttk import Separator
 
 
-from PIL import Image, ImageTk,ImageColor,ImageGrab
-
+from PIL import Image, ImageTk, ImageColor, ImageGrab, ImageDraw
 
 from .staticPy import Collor
 
@@ -22,10 +22,10 @@ StatikImage = []
 """
 StatikImage=[]
 
-def createLabel1(master, text, textAncor="center", bg=Collor.bg, font=None,fs=12) -> Label:
+def createLabel1(master, text, textAncor="center", bg=Collor.bg,fg=Collor.fg, font=None,fs=12) -> Label:
     if font==None:
         font=tkfont.Font(size=fs, family="Bahnschrift")
-    return Label(master, text=text, font=font, anchor=textAncor, bg=bg, fg=Collor.fg)
+    return Label(master, text=text, font=font, anchor=textAncor, bg=bg, fg=fg)
 
 class Window(Tk):
     def __init__(self,**kwargs):
@@ -53,10 +53,166 @@ class Window(Tk):
             self.updateable[a].updateWinXY()
     def setBg(self,bg):
         self.win.configure(bg=bg)
+def slightHightToNull(wiget,atEnd=None):
+    widthOriginal=wiget.winfo_width()
+    w=widthOriginal
+    wiget.pack_propagate(False)
+    def tonull():
+        nonlocal w,widthOriginal
+        print(w-2*(widthOriginal+2-w))
+        w-=1*(widthOriginal+2-w)
+        if w<10:
+            w=0
+            wiget.configure(width=0)
+            wiget.pack_propagate(True)
+            atEnd()
+            return
+
+
+        wiget.configure(width=w)
+
+        wiget.after(30,lambda :tonull())
+    tonull()
+
+def slightHightToMaxPack(wiget,targetwith=0,at_end=None):
+    widthOriginal=targetwith
+    wiget.configure(width=0)
+    w=0
+    wiget.pack_propagate(False)
+    def totarget():
+        nonlocal w,widthOriginal
+        w+=0.4*(targetwith-w)
+        if (w+targetwith//30>=targetwith):
+            wiget.configure(width=targetwith)
+            wiget.pack_propagate(True)
+            if at_end:
+                at_end()
+            return
+        wiget.configure(width=w)
+        wiget.after(30,lambda :totarget())
+    totarget()
+
+class floatingBadge2(Frame):
+    def __init__(self,title="Notification", width=60, height=None,y=0,tkimage=None, **kwargs):
+        Frame.__init__(self, bg=Collor.bg, width=width, height=height, **kwargs)
+        """Note: Master Must determines position"""
+        f = tkfont.Font(size=10, weight="bold")
+        self.width = width
+        self.onClick=None
+        self.visible=False
+        self.height = height
+        f2 = tkfont.Font(font="Calibri", size=4)
+        fr = Frame(bg=Collor.bg, master=self)
+        fr.pack(side="top", anchor="ne")
+        self.w, self.h = width, height
+        self.l = Label(master=fr, bg=Collor.bg, image=tkimage)
+        self.l.bind("<Button-1>", self.tronClick)
+        self.l.pack()
+
+
+        self.y=y
+    def hide(self):
+        self.visible=False
+        self.place_configure(y=-80)
+        slightHightToNull(self,self.place_forget)
+        #self.place_forget()
+
+        print(self.master.updateable.keys())
+        self.master.notifications.remove(self)
+        self.master.updateable.pop(self)
+        self.master.updateNotifications()
+    def tronClick(self,u):
+        self.onClick()
+    def show(self):
+        try:
+
+            ofset = 0
+            print(self.master.notifications)
+
+            self.place(x=self.winfo_screenwidth(), y=self.y)
+            self.master.notifications += [self]
+
+            self.master.updateable[self] = self
+            self.visible = True
+            self.updateWinXY()
+
+
+        except ImportError:  # Exception:
+            raise Exception("Notification Object can only be used in containers using the pack window manager")
+
+    def updateWinXY(self, u=None):
+        if not self.visible:
+            return
+        def pl():
+            x = self.master.winfo_width() - self.winfo_width()
+
+            self.place(x=x,)
+
+        self.after(100, pl)
+def createButtonStyle(master,colora,colorb,name):
+    st=ttk.Style(master)
+    st.theme_use("clam")
 
 
 
 
+    st.configure(name+".TButton", background=colora, foreground=Collor.fg)
+    st.map(name+'.TButton',  foreground=[('disabled', Collor.bg_lighter),
+                    ('pressed', Collor.fg),
+                    ('active', Collor.fg)],
+        background=[('disabled', Collor.bg_selected),
+                    ('pressed', '!focus', 'cyan'),
+                    ('active', colorb)],
+        highlightcolor=[('focus', 'green'),
+                        ('!focus', 'red')],
+        relief=[('pressed', 'groove'),
+                ('!pressed', 'ridge')])
+
+
+def aplyttkStyler(master):
+    st=ttk.Style(master)
+    st.theme_use("clam")
+
+
+
+
+    st.configure("TButton", background=Collor.bg, foreground=Collor.fg)
+    st.map('TButton',  foreground=[('disabled', Collor.bg_lighter),
+                    ('pressed', Collor.fg),
+                    ('active', Collor.fg)],
+        background=[('disabled', Collor.bg_selected),
+                    ('pressed', '!focus', 'cyan'),
+                    ('active', Collor.bg_lighter)],
+        highlightcolor=[('focus', 'green'),
+                        ('!focus', 'red')],
+        relief=[('pressed', 'groove'),
+                ('!pressed', 'ridge')])
+    st.configure("v1.TEntry", tabmargins=0, background=Collor.bg, borderwidth=0, margin=20, padding=[5, 1],
+                    highlightbackground="blue",  # foreground="red",
+                 fieldbackground=Collor.bg,
+                 font=('Bahnschrift', 17),
+                 foreground=Collor.fg,
+                lightcolor=Collor.selector_none, bordercolor=Collor.bg,
+                    darkcolor=Collor.selector_none)
+
+    st.map("v1.TEntry",
+              background=[("selected", Collor.selector_is), ("!selected", Collor.selector_none),
+                          ("active", Collor.selector_none),
+                          ("alternate", Collor.bg), ("!active", Collor.bg)],
+
+              expand=[("selected", Collor.selector_none)], highlightcolor=[('focus', 'red'),
+                                                                ('!focus', 'blue')],)
+    """bordercolor=[("selected", Collor.selector_none), ("!selected", "red")]
+              , lightcolor=[("selected", Collor.selector_none), ("!selected", "red")]"""
+
+    """ st.layout("TEntry",
+            [('Entry.plain.field', {'children': [(
+                'Entry.background', {'children': [(
+                    'Entry.padding', {'children': [(
+                        'Entry.textarea', {'sticky': 'nswe'})],
+                        'sticky': 'nswe'})], 'sticky': 'nswe'})],
+                'border': '2', 'sticky': 'nswe'})])"""
+    return st
 
 
 class Notification(Frame):
@@ -129,15 +285,43 @@ class Notification(Frame):
 
         self.after(100, pl)
 
-def createImage(path, x, y,nsa=False):
+def createImage(path, x, y,nsa=False,name="",unknown="resources/unknown_plg.png",cornerRadius=None):
     global StatikImage
 
-    photo = Image.open(path)
 
-    i = ImageTk.PhotoImage(photo.resize((x, y)), name=path)
-    if not nsa:
-        StatikImage += [i]
-    return i
+    try:
+        photo = Image.open(path)
+        if cornerRadius:
+            photo=__add_corners(im=photo,rad=cornerRadius)
+        if not name:
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=path+f"{x}_{y}")
+        else:
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=name+f"{x}_{y}")
+        if not nsa:
+            StatikImage += [i]
+        return i
+    except FileNotFoundError:
+        print("missing:",path)
+        photo = Image.open(unknown)
+        if not name:
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=unknown+f"_{x}_{y}")
+        else:
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=unknown+f"{x}_{y}")
+        if not nsa:
+            StatikImage += [i]
+        return i
+def __add_corners(im, rad):
+    circle = Image.new('L', (rad * 2, rad * 2), 0)
+    draw = ImageDraw.Draw(circle)
+    draw.ellipse((0, 0, rad * 2 - 1, rad * 2 - 1), fill=255)
+    alpha = Image.new('L', im.size, 255)
+    w, h = im.size
+    alpha.paste(circle.crop((0, 0, rad, rad)), (0, 0))
+    alpha.paste(circle.crop((0, rad, rad, rad * 2)), (0, h - rad))
+    alpha.paste(circle.crop((rad, 0, rad * 2, rad)), (w - rad, 0))
+    alpha.paste(circle.crop((rad, rad, rad * 2, rad * 2)), (w - rad, h - rad))
+    im.putalpha(alpha)
+    return im
 
 def createPhoto(path, x, y,nsa=False):
     global StatikImage
@@ -152,13 +336,34 @@ def photo_to_image(photo,x,y):
     global StatikImage
     #print(photo)
     i=ImageTk.PhotoImage(photo.resize((x, y)))
+    i=ImageTk.PhotoImage(photo.resize((x, y)))
     StatikImage += [i]
     return i
 
 
 
+def getPath():
+    f = str(__file__)
+    fs = f[::-1].split("\\", 1)[1]
+    return fs[::-1]
+absolutePath = getPath()
+class RoundetFrame(ttk.Frame):
+    def __init__(self,bg=Collor.bg,highlightbackground=None,highlightthickness=None,highlightcolor=None,bd=None,**kwargs):
+        r=hex(random.randint(1,999999))
+        super().__init__(**kwargs)
+        style = ttk.Style()
 
+        roundet=createImage(getPath()+"/imgs/roundet_nofocus.png",132,132,name="graficstk_roundet_a")
+        roundet_focus = createImage(getPath() + "/imgs/roundet_focus.png",132,132,name="graficstk_roundet_b")
+        style.element_create("RoundedFrame"+str(r),
+                             "image", roundet,
+                             ("focus", roundet_focus),
+                             border=16, sticky="nsew")
+        style.configure("RoundedFrame"+str(r), background=Collor.transparency_color)
+        style.layout("RoundedFrame"+str(r),
+                     [("RoundedFrame"+str(r), {"sticky": "nsew"})])
 
+        self.configure(style="RoundedFrame"+str(r), padding=10)
 
 class ModernColorPicker(Frame):
     def __init__(self,size=250,fg="black",**kw):
@@ -631,14 +836,14 @@ class StickyButton(Label):
     def command(self,command):
         self.commandf=command
     def forceState(self,state:bool):
-        self.klickListener("",forceState=state,nocom=True)
-    def klickListener(self, u,forceState=None,nocom=False):
+        self.klickListener("",forceState=True,state=state,nocom=True)
+    def klickListener(self, u,forceState=None,nocom=False,state=None):
 
         global tagsActive
         if not forceState:
             self.state=not self.state
         else:
-            self.state=forceState
+            self.state=state
         if self.state:
             if self.commandf:
                 if not nocom:
@@ -716,10 +921,10 @@ class ScroledTextBox(Text):
 
 
 class TextBox(Text):
-    def __init__(self, max_lines=1, width2=0, start=None, disable_height_change=True,font=None, **kw):
+    def __init__(self, max_lines=1, width2=0, start=None, disable_height_change=True,font=None,bg=Collor.bg_darker, **kw):
         if font==None:
             font=tkfont.Font(family="Bahnschrift", size=12, weight="bold")
-        super().__init__(bg=Collor.bg_darker, fg=Collor.fg, font=font, **kw)
+        super().__init__(bg=bg, fg=Collor.fg,insertbackground=Collor.fg, font=font, **kw)
         self.bind("<Return>", self.e)
         self.widthNum = width2
         self.max_lines = max_lines
@@ -882,9 +1087,10 @@ class ScrollableFrame(Frame):
         Label(master=self.curs)
         self.curs.place(y=0,x=-6,height=10,)
 
-    def updateHeight(self,u):
+    def updateHeight(self,u=None):
         #print("h",self.innerFrame.winfo_height(),self.innerFrame.place_info())
         self.innerFrame.place_configure(height=self.innerFrame.winfo_reqheight())
+
     def forget_bind(self):
         self.unbind_all("<MouseWheel>")
     def re_bind(self):
@@ -894,24 +1100,28 @@ class ScrollableFrame(Frame):
     def updateWidth(self,u):
         self.configure(width=self.innerFrame.winfo_width())
         self.innerFrame.bind_class('.', "<MouseWheel>", lambda e: self.onScroll(e))
-    def onScroll(self,e):
+
+
+    def onScroll(self,e,delta=0):
         self.updateHeight(1)
-        print(e)
+
         f=self.innerFrame
         y = int(f.place_info()["y"])
         w = int(f.winfo_reqheight()) - self.winfo_height()
         # print(self)
+        if not delta:
+            delta=e.delta
 
-        if e.delta > 0:
+        if delta > 0:
             y += 20
         else:
             y -= 20
-        print(y+self.winfo_height(),self.innerFrame.winfo_reqheight())
+        #print(y+self.winfo_height(),self.innerFrame.winfo_reqheight())
         if ((-y) > w):
-            print("None")
+            #print("None")
             return
         elif ((y) > 0):
-            print("None")
+            #print("None")
             return
 
         f.place_configure(y=y)
