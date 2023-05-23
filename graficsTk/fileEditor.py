@@ -79,7 +79,8 @@ class FileTree(Treeview):
             print(id)
             return None
 
-        def openfile(e):
+        def openfile(e=None):
+            self.event_generate("<<OpenFile>>")
             pass
         self.bind("<Double-Button-1>",openfile)
         self.bind("<Button-1>", setsel)

@@ -88,9 +88,10 @@ if len(argv) >= 2:
     if "--new" in argv:
         create_project()
 
-    if "--prui" in argv:
-        r=setupUi.open()
+    if "--setup-ui" in argv:
+        r=setupUi.openSetup()
         create_project(*r,"y")
+
     for s in argv:
         if s.startswith("--project"):
             u, p = s.split("=", 1)
@@ -98,6 +99,8 @@ if len(argv) >= 2:
             for i in prlist.keys():
                 if p in prlist[i]["name"]:
                     Seti.set("Current-Project", i)
+
+
     """if not ("--c" in argv or "--compile" in argv):
         print("no args provided, use '--c' to compile on next run")
         exit(0)"""
@@ -112,6 +115,7 @@ projectName = Seti.get("All-Projects")[Seti.get("Current-Project")]["name"]
 projectout = Seti.get("All-Projects")[Seti.get("Current-Project")]["out"]
 
 FILE = Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]
+
 
 paser_keywords_corespontents = {}
 
@@ -1111,52 +1115,66 @@ class NewParser:
 
 includes = []
 requires = []
-start_time = time.time()
-try:
-    print("Starting...")
-    print("Querying Module imports...")
-    while True:
+def compile(silentEx=False):
+    global includes,requires
+    includes = []
+    requires = []
 
-        p = NewParser()
-        p.load()
-        for incl in includes:
+    start_time = time.time()
+    try:
+        print("Starting...")
+        print("Querying Module imports...")
+        while True:
 
-            if os.path.exists(incl + ".mcdb"):
-                p.load(incl + ".mcdb")
-            elif os.path.exists("templates/baselib/" + incl + ".mcdb"):
-                p.load("templates/baselib/" + incl + ".mcdb")
-            else:
-                exeptions_.throwError.ModuleNotFound(incl)
+            p = NewParser()
+            p.load()
+            for incl in includes:
 
-        p.parse()
-        # p.wr()
-        p.toCode()
-        includesNew, requiresNew = p.createBlockInclude()
+                if os.path.exists(incl + ".mcdb"):
+                    p.load(incl + ".mcdb")
+                elif os.path.exists("templates/baselib/" + incl + ".mcdb"):
+                    p.load("templates/baselib/" + incl + ".mcdb")
+                else:
+                    exeptions_.throwError.ModuleNotFound(incl)
 
-        if (includesNew == includes) and (requiresNew == requires):
-            break
-        includes, requires = includesNew, requiresNew
-    print("Compiling-Started...")
-    p.createFuncBlock()
-    p.initializeCompileReferenceKeywords()
-    p.declerationfileSerch()
-    p.creteFuncVaribleBlock()
-    print("Analyzing-Operations...")
-    p.identify_ops()
-    print("Generating-Functions...")
-    p.functionexecutionBlock()
+            p.parse()
+            # p.wr()
+            p.toCode()
+            includesNew, requiresNew = p.createBlockInclude()
 
-    """for key in paser_keywords_corespontents.keys():
-        parserCCCBeginWords+=paser_keywords_corespontents[key].split(" ")[0]"""
-    print("Converting to mcfunction format...")
-    p.Variabels_mine_format()
-    print("Saving to file...")
-    p.createFile(requires, includes)
+            if (includesNew == includes) and (requiresNew == requires):
+                break
+            includes, requires = includesNew, requiresNew
+        print("Compiling-Started...")
+        p.createFuncBlock()
+        p.initializeCompileReferenceKeywords()
+        p.declerationfileSerch()
+        p.creteFuncVaribleBlock()
+        print("Analyzing-Operations...")
+        p.identify_ops()
+        print("Generating-Functions...")
+        p.functionexecutionBlock()
 
-    end_time = time.time()
-    print("Finished after", round(end_time - start_time, 6) * 1000, "ms")
-    e = time.time()
-    time.sleep(0.001)
+        """for key in paser_keywords_corespontents.keys():
+            parserCCCBeginWords+=paser_keywords_corespontents[key].split(" ")[0]"""
+        print("Converting to mcfunction format...")
+        p.Variabels_mine_format()
+        print("Saving to file...")
+        p.createFile(requires, includes)
 
-except OSError as e:
-    exeptions_.throwError.CompilationError(e)
+        end_time = time.time()
+        print("Finished after", round(end_time - start_time, 6) * 1000, "ms")
+        e = time.time()
+        time.sleep(0.001)
+        a,b=str(round(end_time - start_time, 6) * 1000).split(".",1)
+        return a+b[:3]+" ms"
+
+    except OSError as e:
+        if not silentEx:
+            exeptions_.throwError.CompilationError(e)
+        return False
+if "--edit" in argv:
+    dict={"compile":compile}
+    setupUi.openEditor(Seti.get("All-Projects")[Seti.get("Current-Project")]["source"],dict)
+    exit()
+compile()

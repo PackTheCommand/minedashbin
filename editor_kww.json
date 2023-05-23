@@ -1,0 +1,72 @@
+[
+  {
+    "kww":
+    [
+      "if", "else","shr"
+    ],
+    "kww2": [
+      "include", "native"
+    ],
+    "kww3": [
+      "(", ")",";","[","]"
+    ],
+    "kww4":
+    [
+      "func"
+    ],
+    "kww5": [
+      "advancement",
+      "attribute",
+      "bossbar",
+      "clear",
+      "clone",
+      "damage",
+      "data",
+      "datapack",
+      "debug",
+      "difficulty",
+      "effect",
+      "enchant",
+      "ep",
+      "execute",
+      "fill",
+      "fillbiome",
+      "forceload",
+      "gamemode",
+      "give",
+      "help",
+      "item",
+      "jfr",
+      "kill",
+      "locate",
+      "loot",
+      "me",
+      "msg",
+      "particle",
+      "perf",
+      "place",
+      "playsound",
+      "recipe",
+      "reload",
+      "ride",
+      "say",
+      "scoreboard",
+      "seed",
+      "setblock",
+      "spawnpoint",
+      "stopsound",
+      "tag",
+      "team",
+      "tell",
+      "tellraw",
+      "title",
+      "tp",
+      "trigger",
+      "w"
+    ]
+
+
+  }
+]
+
+
