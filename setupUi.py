@@ -363,7 +363,51 @@ class LineNumberText_Text(Text):
 
             retStr[-1] += char
         return retStr
+class ToolTip(object):
 
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.inwiget=False
+        self.x = self.y = 0
+
+    def showtip(self, text):
+        "Display text in tooltip window"
+        self.text = text
+        if self.tipwindow or not self.text:
+            return
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx()
+        y = y + cy + self.widget.winfo_rooty() +27
+        self.tipwindow = tw = Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = Label(tw, text=self.text, justify="left",fg=Collor.fg,
+                      background=Collor.bg_lighter, relief="solid", borderwidth=1,
+                      font=("tahoma", "9", "normal"))
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
+def CreateToolTip(widget1, text):
+    toolTip = ToolTip(widget1)
+    def enter(event):
+        nonlocal widget1
+        toolTip.inwiget=True
+        def checkinw():
+            if toolTip.inwiget:
+                toolTip.showtip(text)
+        widget1.after(1700,checkinw)
+    def leave(event):
+        toolTip.inwiget = False
+        toolTip.hidetip()
+    widget1.bind('<Enter>', enter)
+    widget1.bind('<Leave>', leave)
 
 def openEditor(mainfile,dict1):
     t = Tk()
@@ -389,7 +433,8 @@ def openEditor(mainfile,dict1):
 
 
 
-    b=LabelButton(master=f,img=createImage("imgs/compile_64.png",20,20))
+    b=LabelButton(master=f,img=createImage("imgs/compile_64.png",22,22))
+    CreateToolTip(b,"Build Datapack")
     def compile():
         p.pack(side="right",padx=(0,20))
         p.start(8)
@@ -408,7 +453,7 @@ def openEditor(mainfile,dict1):
         threading.Thread(target=compile).start()
 
     b.command(compThread)
-    b.pack(side="right",anchor="e")
+    b.pack(side="right",anchor="e",padx=(0,26))
 
 
     print("path",mainfile[::-1].split("/",1)[1][::-1])
@@ -427,16 +472,18 @@ def openEditor(mainfile,dict1):
     a.bind("<<OpenFile>>", openfile)
 
 
-    a.pack(side="left")
-    tel = LineNumberText_NumberBouard(t, bg=Collor.bg_lighter, width=30,
+    a.pack(side="left",fill="both")
+    fa = Frame(t,bg=Collor.bg)
+    fa.pack(fill="both",expand=True)
+    tel = LineNumberText_NumberBouard(fa, bg=Collor.bg_lighter, width=30,
                                       highlightbackground=Collor.bg)
-    text = LineNumberText_Text(t, insertbackground=Collor.fg, font=font.Font(size=13, family="Calibre"), bg=Collor.bg,
+    text = LineNumberText_Text(fa, insertbackground=Collor.fg, font=font.Font(size=13, family="Calibre"), bg=Collor.bg,
                                fg=Collor.fg)
     text.filetree=a
     openfile("",mainfile)
 
-    text.pack(side="right", fill="y", expand=True)
-    tel.pack(side="right", fill="y", expand=True)
+    text.pack(side="right",fill="both",expand=True)
+    tel.pack(side="left", fill="y")
     text.bind("<<Change>>", tel.redraw)
     text.bind("<Configure>", tel.redraw)
     tel.attach(text)
@@ -530,6 +577,8 @@ def openSetup():
     l.pack()
     createLabel1(frame, "", font=f).pack()
     createLabel1(frame, "", font=f).pack()
+
+
     r = []
 
     def create():

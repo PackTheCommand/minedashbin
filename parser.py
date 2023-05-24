@@ -4,6 +4,7 @@ import random
 import re
 import shutil
 import time
+from tkinter import Label, Toplevel
 
 import setings
 
@@ -1177,4 +1178,6 @@ if "--edit" in argv:
     dict={"compile":compile}
     setupUi.openEditor(Seti.get("All-Projects")[Seti.get("Current-Project")]["source"],dict)
     exit()
+
+
 compile()
