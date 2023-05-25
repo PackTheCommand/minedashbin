@@ -1,9 +1,11 @@
+import io
 import os
+import sys
 import threading
 import tkinter
 from tkinter import *
 from tkinter import ttk, font
-from tkinter.ttk import Style
+from tkinter.ttk import Style, Sizegrip
 
 import _tkinter
 from pyrr.rectangle import height
@@ -393,6 +395,7 @@ class ToolTip(object):
         self.tipwindow = None
         if tw:
             tw.destroy()
+from graficsTk.notebook import TabBook
 
 def CreateToolTip(widget1, text):
     toolTip = ToolTip(widget1)
@@ -408,10 +411,12 @@ def CreateToolTip(widget1, text):
         toolTip.hidetip()
     widget1.bind('<Enter>', enter)
     widget1.bind('<Leave>', leave)
-
+import exeptions_
+from contextlib import redirect_stdout
 def openEditor(mainfile,dict1):
     t = Tk()
     t.title("Editor")
+    t.geometry("%sx%s+10+10"%(t.winfo_screenwidth()-200,t.winfo_screenheight()-200))
     t.configure(bg=Collor.bg_lighter)
     a = FileTree(height=30, width=400)
     f = Frame(bg=Collor.bg_lighter)
@@ -427,6 +432,40 @@ def openEditor(mainfile,dict1):
     )
     f.pack(fill="x")
     fb.pack(fill="x",side="bottom")
+    fcon=Frame(bg=Collor.bg)
+    fcon.pack(fill="x", side="bottom")
+    tb=TabBook(master=fcon)
+    tb.pack(fill="both",expand=True)
+    consCount=0
+    def createConsole(e,name=None):
+        nonlocal consCount
+        consCount+=1
+        fr=Frame(bg=Collor.bg,master=tb)
+        if name==None:
+            name="Console "+str(consCount)
+        f12 = TextBox(master=fr,font=font.Font(family="Calibre",size=14),height=11)
+        r12 = tb.addTab(name, fr)
+        f12.disable(True)
+
+        f12.pack(fill="x")
+        f12_imp = TextBox(master=fr, font=font.Font(family="Calibre", size=14), height=1)
+        f12_imp.pack(fill="x")
+        tb.nav(r12)
+
+        def insertEnter(e):
+            c=f12_imp.getValue()
+            f12_imp.clear()
+            f12.disable(False)
+            f12.insert(tkinter.END,"\n>>> "+c)
+            f12.disable(True)
+            return "break"
+        print("created")
+        f12_imp.bind("<Return>",insertEnter)
+        return f12,r12
+    tb.addButton(text="➕",id=9999999,command=createConsole)
+
+    """s=Sizegrip(master=fb)
+    s.pack(side="right")"""
     lastbuildInfo=createLabel1(fb,"",bg=Collor.bg_lighter)
     lastbuildInfo.pack(side="right",anchor="se",padx=(0,20))
 
@@ -435,16 +474,59 @@ def openEditor(mainfile,dict1):
 
     b=LabelButton(master=f,img=createImage("imgs/compile_64.png",22,22))
     CreateToolTip(b,"Build Datapack")
+    exeptions_.disableExit()
+    strout=io.StringIO()
+    con=None
+    conid=None
     def compile():
+        nonlocal strout,con,conid
         p.pack(side="right",padx=(0,20))
+
         p.start(8)
+        text.save("")
         p.update()
-        ret=dict1["compile"]()
+        lastid=None
+        last=False
+        if con:
+            lastid=conid
+            last=True
+
+
+        con,conid = createConsole("","Run")
+        if last:
+            tb.destroyTab(lastid)
+
+        strout.close()
+        strout=io.StringIO()
+
+        def updateConsole(in_):
+            try:
+                insert = in_.getvalue()
+            except ValueError:
+                return
+
+            strout.truncate(0)
+            con.disable(False)
+            con.insert(tkinter.END,insert)
+            if insert!="":
+                con.yview_pickplace("end")
+            con.disable(True)
+            t.after(50,lambda:updateConsole(in_))
+
+        updateConsole(strout)
+
+
+        try:
+            with redirect_stdout(strout):
+
+                ret=dict1["compile"]()
+        except Exception:
+            ret=False
 
         p.stop()
         p.pack_forget()
         if ret==False:
-            lastbuildInfo.configure(fg=Collor.Error,text=" Build failed")
+            lastbuildInfo.configure(fg=Collor.Error,text=" Build failed > "+exeptions_.exeptionreson)
             return
 
         lastbuildInfo.configure(fg=Collor.Success,text="Build finished after "+ret)

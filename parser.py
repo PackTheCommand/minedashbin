@@ -1174,6 +1174,7 @@ def compile(silentEx=False):
         if not silentEx:
             exeptions_.throwError.CompilationError(e)
         return False
+
 if "--edit" in argv:
     dict={"compile":compile}
     setupUi.openEditor(Seti.get("All-Projects")[Seti.get("Current-Project")]["source"],dict)

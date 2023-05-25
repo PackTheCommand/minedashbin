@@ -1,112 +1,124 @@
 
-def ex()->exit:
-    exit(404)
+
+disableEx=False
+exeptionreson=""
+def disableExit():
+    global disableEx
+    disableEx=True
+def ex(errc):
+    global exeptionreson
+    print(errc)
+    exeptionreson=errc
+    if not disableEx:
+        exit(404)
+    raise Exception("Compilation Failed")
+
 
 
 
 class throwError:
     @staticmethod
     def unknownOperator(op, l):
-        print(f"Err (C:001): Unknown operator '{op}' [Compiler-fails] in line " + str(l))
-        ex()
+        ex(f"Err (C:001): Unknown operator '{op}' [Compiler-fails] in line " + str(l))
+
 
     @staticmethod
     def unableToUnderstandInstrucktion(op, l):
-        print(f"Err (C:002): Unknown Instruction '{op}' [Compiler-fails] in line " + str(l))
-        ex()
+        ex(f"Err (C:002): Unknown Instruction '{op}' [Compiler-fails] in line " + str(l))
+
 
     @staticmethod
     def indexiationError(op, l):
-        print(f"Err (C:003): line '{op}' has forbiden spacing number schould be '  '")
-        ex()
+        ex(f"Err (C:003): line '{op}' has forbiden spacing number schould be '  '")
+
 
     @staticmethod
     def TypeValueError(l):
-        print("Err (C:004): TypeValueError in line " + str(l))
-        ex()
+        ex("Err (C:004): TypeValueError in line " + str(l))
+
 
     @staticmethod
     def kww_missing_arguments(l, kww, got, takes):
-        print(f"Err (C:005): Keyword '{kww}' is arguments not matching given:{got} needs:{takes}")
-        ex()
+        ex(f"Err (C:005): Keyword '{kww}' is arguments not matching given:{got} needs:{takes}")
+
 
     @staticmethod
     def parameterLimitReched(l):
-        print("Err (C:006): ParameterLimitRecheched in line " + str(l) + " not more than 9999 parameters are alowed")
-        ex()
+        ex("Err (C:006): ParameterLimitRecheched in line " + str(l) + " not more than 9999 parameters are alowed")
+
 
     @staticmethod
     def parameterCountNotMacking(func, takes, got):
-        print(f"Err (C:007): Parameters of function {func} not matching with required params given:{got} needs:{takes}")
-        ex()
+        ex(f"Err (C:007): Parameters of function {func} not matching with required params given:{got} needs:{takes}")
+
 
     @staticmethod
     def ccFileError(addI, file):
-        print("Err (C:008): CCFileError triing to load " + str(file) + " " + addI)
-        ex()
+        ex("Err (C:008): CCFileError triing to load " + str(file) + " " + addI)
+
 
     @staticmethod
     def functionDoesntExist(func):
-        print(f"Err (C:009): function '{func}' doesn't exist")
-        ex()
+        ex(f"Err (C:009): function '{func}' doesn't exist")
+
 
     @staticmethod
     def nativeModulerNotFound(modulepath):
-        print(f"Err (C:011): Native-Module {modulepath} not found")
-        ex()
+        ex(f"Err (C:011): Native-Module {modulepath} not found")
+
 
     @staticmethod
     def schortGivenToMuchArgs(synt):
-        print(f"Err (C:012): Short needs two arguments providet: {synt} ")
-        ex()
+        ex(f"Err (C:012): Short needs two arguments providet: {synt} ")
+
 
     @staticmethod
     def ModuleNotFound(modulepath):
-        print(f"Err (C:013): Module {modulepath} not found")
-        ex()
+        ex(f"Err (C:013): Module {modulepath} not found")
+
 
     @staticmethod
     def StringNeverClosedErr(line):
-        print(f"Err (C:014): String never closed in line '{line}'")
-        ex()
+        ex(f"Err (C:014): String never closed in line '{line}'")
+
 
     @staticmethod
     def MissingBrackts(l):
-        print("Err (C:015): EmptyFunction in line " + str(l))
-        ex()
+        ex("Err (C:015): EmptyFunction in line " + str(l))
+
 
     @staticmethod
     def MissingSimicolon(l):
-        print("Err (C:016): Missing semicolon in line " + str(l))
-        ex()
+        ex("Err (C:016): Missing semicolon in line " + str(l))
+
 
     @staticmethod
     def CompilationError(pycode):
-        print(f"Err (C:017): CompilationError '{repr(pycode)}' [Compiler-fails] reason <seePyBasedError> ")
-        ex()
+        ex(f"Err (C:017): CompilationError '{repr(pycode)}' [Compiler-fails] reason <seePyBasedError> ")
+
 
     @staticmethod
     def BrackedNeverClosed(l):
-        print("Err (C:018): The bracked in line " + str(l) + " was never closed")
-        ex()
+        ex("Err (C:018): The bracked in line " + str(l) + " was never closed")
+
 
     @staticmethod
     def invalidIfinstucktion(func):
-        print(f"Err (C:0019): invalid if instruction '{func}' ")
-        ex()
+        ex(f"Err (C:0019): invalid if instruction '{func}' ")
+
 
     @staticmethod
     def variableNotdeclarated_Error(var):
-        print(f"Err (C:020): Variable was never initialized '{var}' ")
-        ex()
+        ex(f"Err (C:020): Variable was never initialized '{var}' ")
+
 
     @staticmethod
     def functionforseduenotdefined(name,case):
-        print(f"Err (C:021): {case}-seduce function '{name}' has never been declared")
-        ex()
+        ex(f"Err (C:021): {case}-seduce function '{name}' has never been declared")
+
 
     @staticmethod
     def unknownShort(sh):
-        print(f"Err (C:022): Unknown Short '{sh}'  ")
-        ex()
+        ex(f"Err (C:022): Unknown Short '{sh}'  ")
+
 
