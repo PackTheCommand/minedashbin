@@ -1,6 +1,8 @@
 import io
 import os
+import subprocess
 import sys
+import textwrap
 import threading
 import tkinter
 from tkinter import *
@@ -16,6 +18,18 @@ import tkinter.filedialog as fd
 from minedashbin.graficsTk.fileEditor import FileTree
 
 
+
+
+
+####GLOBALS###########
+
+VERSION = "0.4.1"
+
+OUT_DIR = ""
+
+PR_NAME =""
+
+######################
 class LineNumberText_NumberBouard(Canvas):
     def __init__(self, *args, **kwargs):
         Canvas.__init__(self, *args, **kwargs)
@@ -415,7 +429,8 @@ import exeptions_
 from contextlib import redirect_stdout
 def openEditor(mainfile,dict1):
     t = Tk()
-    t.title("Editor")
+    t.iconbitmap("imgs/ico.ico")
+    t.title("Minedashbin - Editor")
     t.geometry("%sx%s+10+10"%(t.winfo_screenwidth()-200,t.winfo_screenheight()-200))
     t.configure(bg=Collor.bg_lighter)
     a = FileTree(height=30, width=400)
@@ -431,6 +446,8 @@ def openEditor(mainfile,dict1):
     length=280,style="special1.Horizontal.TProgressbar"
     )
     f.pack(fill="x")
+    createLabel1(fb,"vers. "+VERSION,bg=Collor.bg_lighter).pack(side="left",padx=(5,0))
+
     fb.pack(fill="x",side="bottom")
     fcon=Frame(bg=Collor.bg)
     fcon.pack(fill="x", side="bottom")
@@ -469,11 +486,19 @@ def openEditor(mainfile,dict1):
     lastbuildInfo=createLabel1(fb,"",bg=Collor.bg_lighter)
     lastbuildInfo.pack(side="right",anchor="se",padx=(0,20))
 
+    """textwrap.wrap(text, width, break_long_words=False)"""
 
-
-
+    L=Label(master=f,image=createImage("imgs/ico.png",24,24),bg=Collor.fg,highlightthickness=0,borderwidth=0)
+    L.pack(side="left")
+    prname=PR_NAME
+    if len(PR_NAME)>20:
+        prname=PR_NAME[:20]+".."
+    L=createLabel1(f,"Minedashbin ᐅ "+prname,font=font.Font(size=14,family="Calibre"),bg=Collor.bg_lighter)
+    L.pack(side="left",padx=(10,0))
     b=LabelButton(master=f,img=createImage("imgs/compile_64.png",22,22))
+    b2 = LabelButton(master=f, img=createImage("imgs/output_64.png", 22, 22),command=lambda :subprocess.Popen(rf'explorer /select,{OUT_DIR}"'))
     CreateToolTip(b,"Build Datapack")
+    CreateToolTip(b2, "open output")
     exeptions_.disableExit()
     strout=io.StringIO()
     con=None
@@ -535,7 +560,9 @@ def openEditor(mainfile,dict1):
         threading.Thread(target=compile).start()
 
     b.command(compThread)
-    b.pack(side="right",anchor="e",padx=(0,26))
+    b2.pack(side="right", anchor="e", padx=(0, 1))
+    b.pack(side="right",anchor="e",padx=(0,1))
+
 
 
     print("path",mainfile[::-1].split("/",1)[1][::-1])

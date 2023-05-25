@@ -112,9 +112,12 @@ if Seti.get("All-Projects") == {}:
 
 print("project",Seti.get("All-Projects"),Seti.get("Current-Project"))
 projectName = Seti.get("All-Projects")[Seti.get("Current-Project")]["name"]
-
+setupUi.PR_NAME=projectName
 projectout = Seti.get("All-Projects")[Seti.get("Current-Project")]["out"]
-
+if projectout.startswith("C:"):
+    setupUi.OUT_DIR=projectout+"\\"+projectName
+else:
+    setupUi.OUT_DIR =os.getcwd()+"\\"+ projectout+"\\"+projectName
 FILE = Seti.get("All-Projects")[Seti.get("Current-Project")]["source"]
 
 
