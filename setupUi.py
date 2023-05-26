@@ -52,11 +52,16 @@ class LineNumberText_NumberBouard(Canvas):
             i = self.textComp.index("%s+1line" % i)
 
 
+from graficsTk import sugestionBox
+
 class LineNumberText_Text(Text):
     def __init__(self, *args, **kwargs):
         Text.__init__(self, *args, **kwargs)
+        self.sugesttypes = {"default":"imgs/sugestion_64.png"}
+
         self.configure(undo=True)
         self.filetree=None
+        self.kwwNameVal=""
         self._orig = self._w + "_orig"
         self._orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._orig)
@@ -65,13 +70,16 @@ class LineNumberText_Text(Text):
         self.kwws = []
         self.genMarkers()
         self.openFileName=None
-
+        self.autocompletetext:sugestionBox.SugestionsBox=None
         self.autocompVisible = True
-        self.listbox: Listbox = None
+        self.listboxa: Listbox = None
+        self.listboxb:Listbox=None
         self.autocompleteOptions = []
         self.autocompleteVar = Variable(value=self.autocompleteOptions)
 
         self.bind("<Key>", lambda u: self.after(10, self.queryKww))
+        self.spawnPopup(None)
+        self.hidePopup()
 
     def readJson(self):
         with open("editor_kww.json", encoding="UTF-8") as f:
@@ -103,52 +111,25 @@ class LineNumberText_Text(Text):
         return ind1 + ".0"
 
     def bindAutoComplete(self):
-        def selectUper(e):
-            if self.autocompVisible:
-                cur = self.listbox.curselection()
-                if cur == ():
-                    cur = (0,)
-                print("fdsfds", cur)
-                if cur[0] == 0:
-                    return
-                self.listbox.select_clear(cur[0])
-                self.listbox.select_set(cur[0] - 1)
 
-                return "break"
-
-        def selectLower(e):
-            print("kfjedwjo0ijoifgrejoijioüfdejiojhoiüferww")
-            cur = self.listbox.curselection()
-            if self.autocompVisible:
-                if cur == ():
-                    cur = (0,)
-                print("fdsfds", cur)
-                if cur[0] >= len(self.autocompleteOptions) - 1:
-                    return
-                self.listbox.select_clear(cur[0])
-                self.listbox.select_set(cur[0] + 1)
-                return "break"
 
         def complete(e):
-            cur = self.listbox.curselection()
-            if self.autocompVisible:
-                if cur == ():
-                    cur = (0,)
-                ins = self.index(INSERT)
-                spi = self.querylineForSpace(ins)
-                print("spi", spi)
-                self.replace(spi, ins, self.autocompleteOptions[cur[0]])
-                self.hidePopup()
 
-                return "break"
+            ins = self.index(INSERT)
+            spi = self.querylineForSpace(ins)
+            print("spi", spi)
+            self.replace(spi, ins, self.autocompletetext.getSelected())
+            self.hidePopup()
 
-        self.bind("<Down>", selectLower)  #
+            return "break"
+
+
         self.bind("<Escape>", lambda u: self.hidePopup())
         self.bind("<Tab>", complete)
         self.master.bind("<Configure>", lambda u: self.hidePopup())
         self.bind("<MouseWheel>", lambda u: self.hidePopup())
         self.bind("<FocusOut>", complete)
-        self.bind("<Up>", selectUper)
+
         self.bind("<Control-s>", self.save)
     def save(self,u=None):
         fn=self.openFileName
@@ -189,37 +170,50 @@ class LineNumberText_Text(Text):
         self.autocompletewindow.withdraw()
 
     def spawnPopup(self, index):
-        b = self.bbox(index)
-        # print(b,index)
-        if b == None:
-            return
-        x, y = b[:2]
-        x, y = x + self.winfo_rootx() - 40, y + self.winfo_rooty() + 20
+        if index==None:
+            x,y=0,0
+
+        else:
+            b = self.bbox(index)
+            # print(b,index)
+            if b == None:
+                return
+            x, y = b[:2]
+            x, y = x + self.winfo_rootx() - 40, y + self.winfo_rooty() + 20
         # print("e",b)
 
         if not self.autocompletewindow:
             self.autocompletewindow = w = Tk()
             w.configure(bg=Collor.bg_selected)
-            listbox = Listbox(
-                w, font=font.Font(family="Calibri", size=11, underline=False), borderwidth=0, highlightthickness=0,
-                bg=Collor.bg_selected, fg=Collor.fg,
-                selectbackground=Collor.selector_is,
+            self.autocompletetext=sugestionBox.SugestionsBox(master=self.autocompletewindow, matchCollor=Collor.Success, bg=Collor.bg,
+                                                             imgtypes=self.sugesttypes,
+                                       fg=Collor.fg, font=font.Font(family="Calibre", size=14),window=self.autocompletewindow)
+            self.autocompletetext.pack()
+            ass=self.autocompletetext
+            def up(e):
+                ass.up("")
+                return "break"
+            def down(e):
+                ass.down("")
+                return "break"
+            self.bind('<Up>', up)
+            self.bind('<Down>', down)
 
-                height=6,
-                selectmode=tkinter.EXTENDED
-            )
-            listbox.pack(pady=(3, 3), padx=(5, 5))
-            self.listbox = listbox
+
             w.overrideredirect(True)
             self.autocompVisible = True
             self.bindAutoComplete()
             w.geometry("+%s+%s" % (x, y))
         else:
             self.autocompletewindow.lift()
-            self.listbox.delete(0, tkinter.END)
-            for n, item in enumerate(self.autocompleteOptions):
-                self.listbox.insert(n, item)
-            self.listbox.update()
+            self.autocompletetext.clear()
+            na=self.kwwNameVal
+            for opt in self.autocompleteOptions:
+                a, b = self.kwwNameVal, opt[len(self.kwwNameVal):]
+                print("addet",self.kwwNameVal)
+                self.autocompletetext.addItem(a, b)
+
+
             if len(self.autocompleteOptions) <= 0:
                 self.autocompVisible = False
                 self.autocompletewindow.withdraw()
@@ -234,6 +228,7 @@ class LineNumberText_Text(Text):
         self.autocompleteOptions.clear()
         i2 = self.querylineForSpace(ins)
         value = self.get(i2, ins)
+        self.kwwNameVal=value
         if value.replace(" ", "") == "":
             return
         print("Value", value, ins, i2)
@@ -245,12 +240,16 @@ class LineNumberText_Text(Text):
                 print(self.kwws)
 
         print(self.autocompleteOptions)
-        if self.listbox:
+        if self.listboxa:
             pass
-            self.listbox.configure(height=len(self.autocompleteOptions))
+            self.listboxa.configure(height=len(self.autocompleteOptions))
+        if self.listboxb:
+            pass
+            self.listboxb.configure(height=len(self.autocompleteOptions))
 
     def queryKww(self):
         self.getPosible()
+
         self.autocompleteVar.set(self.autocompleteOptions)
 
         self.spawnPopup(self.index(tkinter.INSERT))
@@ -425,6 +424,7 @@ def CreateToolTip(widget1, text):
         toolTip.hidetip()
     widget1.bind('<Enter>', enter)
     widget1.bind('<Leave>', leave)
+
 import exeptions_
 from contextlib import redirect_stdout
 def openEditor(mainfile,dict1):

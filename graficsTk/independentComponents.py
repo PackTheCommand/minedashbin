@@ -285,7 +285,7 @@ class Notification(Frame):
 
         self.after(100, pl)
 
-def createImage(path, x, y,nsa=False,name="",unknown="resources/unknown_plg.png",cornerRadius=None):
+def createImage(path, x, y,nsa=False,name="",unknown="resources/unknown_plg.png",cornerRadius=None,master=None,):
     global StatikImage
 
 
@@ -294,19 +294,19 @@ def createImage(path, x, y,nsa=False,name="",unknown="resources/unknown_plg.png"
         if cornerRadius:
             photo=__add_corners(im=photo,rad=cornerRadius)
         if not name:
-            i = ImageTk.PhotoImage(photo.resize((x, y)), name=path+f"{x}_{y}")
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=path+f"{x}_{y}",master=master)
         else:
-            i = ImageTk.PhotoImage(photo.resize((x, y)), name=name+f"{x}_{y}")
-        if not nsa:
-            StatikImage += [i]
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=name+f"{x}_{y}",master=master)
+
+        StatikImage += [i]
         return i
     except FileNotFoundError:
         print("missing:",path)
         photo = Image.open(unknown)
         if not name:
-            i = ImageTk.PhotoImage(photo.resize((x, y)), name=unknown+f"_{x}_{y}")
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=unknown+f"_{x}_{y}",master=master)
         else:
-            i = ImageTk.PhotoImage(photo.resize((x, y)), name=unknown+f"{x}_{y}")
+            i = ImageTk.PhotoImage(photo.resize((x, y)), name=unknown+f"{x}_{y}",master=master)
         if not nsa:
             StatikImage += [i]
         return i
