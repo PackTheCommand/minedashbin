@@ -55,7 +55,7 @@ class LineNumberText_NumberBouard(Canvas):
 
 
 from graficsTk import sugestionBox
-
+import mcCommandPasser
 class LineNumberText_Text(Text):
     def __init__(self, *args, **kwargs):
         Text.__init__(self, *args, **kwargs)
@@ -83,6 +83,31 @@ class LineNumberText_Text(Text):
         self.bind("<Key>", lambda u: self.after(10, self.queryKww))
         self.spawnPopup(None)
         self.hidePopup()
+        def scedueErrSearch():
+
+            self.scannlinesForError()
+            self.after(1000,scedueErrSearch)
+
+        self.after(1000, scedueErrSearch)
+    def scannlinesForError(self):
+        lines=[]
+        print("\\",self.get("0.0",tkinter.END))
+        for line in self.get("0.0",tkinter.END).split("\n"):
+            lines+=[line]
+        allErrors=mcCommandPasser.parse(lines)
+        #print("scannlinesForError",allErrors)
+        #self.tag_remove("error","0.0",tkinter.END)
+        for n,errlist in enumerate(allErrors):
+
+            for error in errlist:
+                print("error",'%s.%d' % (n+1, error[0]),'%s.%d' % (n+1, error[1]))
+
+                self.tag_add("error",'%s.%d' % (n+1, error[0]),'%s.%d' % (n+1, error[1]))
+
+        #print(errlist,lines)
+
+
+
 
     def readJson(self):
         with open("editor_kww.json", encoding="UTF-8") as f:
@@ -99,6 +124,8 @@ class LineNumberText_Text(Text):
         self.kww_colect["cond"] = self.colection[0]["kww"]
 
         self.tag_configure("kww", foreground="#BB5387")
+
+        self.tag_configure("error", underline=True,underlinefg=Collor.Error)
 
         self.tag_configure("kww2", foreground="#A35FE2")
         # strings #6A994E
@@ -121,7 +148,7 @@ class LineNumberText_Text(Text):
 
         return ind1 + ".0"
     def complete(self,e):
-
+        print("completing !!!!!!!")
         ins = self.index(INSERT)
         spi = self.querylineForSpace(ins)
         print("spi", spi)
@@ -140,10 +167,11 @@ class LineNumberText_Text(Text):
         self.bind("<Tab>", self.complete)
         self.master.bind("<Configure>", lambda u: self.hidePopup())
         self.bind("<MouseWheel>", lambda u: self.hidePopup())
-        self.bind("<FocusOut>", self.complete)
+        #self.bind("<FocusOut>", self.complete)
 
         self.bind("<Control-s>", self.save)
     def save(self,u=None):
+        print("saving")
         fn=self.openFileName
         if fn==None:
             return
@@ -288,6 +316,7 @@ class LineNumberText_Text(Text):
 
 
 
+
         self.spawnPopup(self.index(tkinter.INSERT))
 
         for tag in self.colection[0].keys():
@@ -385,6 +414,7 @@ class LineNumberText_Text(Text):
         placeMarkersFromList(L3, "comment")
         placeMarkersFromList(L, "string")
 
+
         # print("getString")
 
     def getStringSeperated(string, splitonspace=True):
@@ -469,6 +499,7 @@ from contextlib import redirect_stdout
 def openEditor(mainfile,dict1):
     global pathbox
     t = Tk()
+    t.withdraw()
     t.iconbitmap("imgs/ico.ico")
     t.title("Minedashbin - Editor")
     t.geometry("%sx%s+10+10"%(t.winfo_screenwidth()-200,t.winfo_screenheight()-200))
@@ -486,7 +517,7 @@ def openEditor(mainfile,dict1):
     length=280,style="special1.Horizontal.TProgressbar"
     )
     f.pack(fill="x")
-    pathbox= sugestionBox.PathShow(master=fb)
+    pathbox= sugestionBox.PathShow(master=fb,inactivecolor=Collor.bg_lighter,activeColor=Collor.bg)
     pathbox.pack(side="left",padx=(5,0))
 
     #createLabel1(fb,"vers. "+VERSION,bg=Collor.bg_lighter).pack(side="left",padx=(5,0))
@@ -613,6 +644,7 @@ def openEditor(mainfile,dict1):
 
     def openfile(e=None,file=None):
         # saving oldfile
+        print("opening !!!!!!!!")
         text.save()
         # reading new
         if not file:
@@ -632,6 +664,7 @@ def openEditor(mainfile,dict1):
             mainfilepath = mainfile[::-1].split("/", 2)[2][::-1].replace("/", "\\").split("\\")
             items = file.replace("/", "\\").split("\\")[len(mainfilepath):]
             itemcount = len(items) - 1
+            pathbox.adddecorator("🚩")
             for n, e in enumerate(items):
                 pathbox.cl(e)
                 if n != itemcount:
@@ -660,6 +693,7 @@ def openEditor(mainfile,dict1):
     text.bind("<Configure>", tel.redraw)
     tel.attach(text)
     #print(a.fileIds)
+    t.deiconify()
     t.mainloop()
 
 

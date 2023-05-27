@@ -86,27 +86,29 @@ class SugestionsBox(Text):
 
 
 class PathShow(tkinter.Frame):
-    def __init__(self,**kwargs):
+    def __init__(self,activeColor,inactivecolor,**kwargs):
         super().__init__(**kwargs)
         self.labels = []
+        self.activecolor = activeColor
+        self.inactivecolor = inactivecolor
 
     def cl(self, name):
-        l = createLabel1(self, name, bg=Collor.bg)
+        l = createLabel1(self, name, bg=self.inactivecolor)
         l.pack(side="left")
 
         self.labels += [l]
 
         def enter():
-            l.configure(bg=Collor.bg_lighter)
+            l.configure(bg=self.activecolor,fg=Collor.Polar)
 
         def leave():
-            l.configure(bg=Collor.bg)
+            l.configure(bg=self.inactivecolor,fg=Collor.fg)
 
         l.bind("<Enter>", lambda u: enter())
         l.bind("<Leave>", lambda u: leave())
 
     def adddecorator(self, symbol):
-        l = createLabel1(self, symbol, bg=Collor.bg)
+        l = createLabel1(self, symbol, bg=self.inactivecolor)
         l.pack(side="left")
 
         self.labels += [l]

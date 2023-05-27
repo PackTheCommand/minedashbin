@@ -31,7 +31,7 @@ say hi;
 func tls(new,parser,privat,nuller){
 
 
-
+fill fd 34 34 34 34 34 minecraft:dirt;
 fill ~ ~ ~ ~ ~ ~ dirt;
 execute as <selE> run say hi;
 }
@@ -42,39 +42,6 @@ a=12;
 
 say Loaded;
 func doNothing(){}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
