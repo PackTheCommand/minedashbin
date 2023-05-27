@@ -1,21 +1,13 @@
-----main-----
- @v-l .p $= .1 num
- I..I schedule function testproject:spawn_pointer 1s
-----this.empty-----
- @nai place 12 12 12 minecraft:grass
-----this.diskpart-----
- @v-l .p $= .12 num
- @inj "tesl ais best"
- @v-l .d $= .p obj
- @fc this.myfunc 4  1,1,1,1 
- @fc this.tls 4  1,1,1,1 
-----this.tls-----
- @nai fill ~ ~ ~ dirt
- @nai fill ~ ~ ~ ~ ~ ~ dirt
- @nai execute as <selE>
-----this.myfunc-----
-----this.movePointer-----
- I..I schedule function testproject:tppointer 1s
+
+
+
+
+
+
+
+
+
+
 
 
 

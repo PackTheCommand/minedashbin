@@ -2,7 +2,7 @@
   {
     "kww":
     [
-      "if", "else","shr"
+      "if", "else"
     ],
     "kww2": [
       "include", "native"
@@ -12,7 +12,7 @@
     ],
     "kww4":
     [
-      "func"
+      "func","shr"
     ],
     "kww5": [
       "advancement",

@@ -1,15 +1,16 @@
 import tkinter
 from tkinter import Text
 
-from .independentComponents import createImage
+from . import Collor
+from .independentComponents import createImage, createLabel1
 
 
 class SugestionsBox(Text):
-    def __init__(self,matchCollor,imgtypes=None,window=None,**kwargs):
+    def __init__(self,matchCollor,selectCollor,imgtypes=None,window=None,**kwargs):
         super().__init__(height=1,width=1,**kwargs)
         self.tag_configure("match",foreground=matchCollor)
         self.bind()
-        self.tag_configure("mark",background="green")
+        self.tag_configure("mark",background=selectCollor)
         self.items=0
         self.w=window
         if imgtypes==None:
@@ -36,7 +37,7 @@ class SugestionsBox(Text):
         self.selected += 1
         self.tag_remove("mark", "0.0", tkinter.END)
         a1 = f"{self.selected}.0"
-        a2 = f"{self.selected}.end"
+        a2 = f"{self.selected+1}.0"
         self.tag_add("mark", a1,a2)
     def up(self,e):
 
@@ -45,7 +46,7 @@ class SugestionsBox(Text):
         self.selected -= 1
         self.tag_remove("mark", "0.0", tkinter.END)
         a1 = f"{self.selected}.0"
-        a2 = f"{self.selected}.end"
+        a2 = f"{self.selected+1}.0"
         self.tag_add("mark", a1,a2)
     def br(self):
         return "break"
@@ -61,7 +62,7 @@ class SugestionsBox(Text):
         self.insert(a1," "+texta,)
         self.insert( tkinter.END,textb+"\n",)
         self.tag_add("match",a1,a2)
-        c=createImage(self.imgTypes[type0], 14, 14, name="defuld_sugestion",master=self.w)
+        c=createImage(self.imgTypes[type0], 18, 18, name="defuld_sugestion_"+self.imgTypes[type0],master=self.w)
         print(tkinter.image_names())
 
         self.image_create(a1, image=c)
@@ -83,6 +84,36 @@ class SugestionsBox(Text):
         self.replace("0.0",tkinter.END,"")
         self["state"] = "disabled"
 
+
+class PathShow(tkinter.Frame):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.labels = []
+
+    def cl(self, name):
+        l = createLabel1(self, name, bg=Collor.bg)
+        l.pack(side="left")
+
+        self.labels += [l]
+
+        def enter():
+            l.configure(bg=Collor.bg_lighter)
+
+        def leave():
+            l.configure(bg=Collor.bg)
+
+        l.bind("<Enter>", lambda u: enter())
+        l.bind("<Leave>", lambda u: leave())
+
+    def adddecorator(self, symbol):
+        l = createLabel1(self, symbol, bg=Collor.bg)
+        l.pack(side="left")
+
+        self.labels += [l]
+
+    def delall(self):
+        for e in self.labels:
+            e.destroy()
 """tk= tkinter.Tk()
 
 b=boxText("#ff00ff")

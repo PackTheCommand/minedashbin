@@ -18,9 +18,11 @@ import tkinter.filedialog as fd
 from minedashbin.graficsTk.fileEditor import FileTree
 
 
-
-
-
+def round_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
+    points = [x1 + radius, y1, x1 + radius, y1, x2 - radius, y1, x2 - radius, y1, x2, y1, x2, y1 + radius, x2,
+              y1 + radius, x2, y2 - radius, x2, y2 - radius, x2, y2, x2 - radius, y2, x2 - radius, y2, x1 + radius, y2,
+              x1 + radius, y2, x1, y2, x1, y2 - radius, x1, y2 - radius, x1, y1 + radius, x1, y1 + radius, x1, y1]
+    self.create_polygon(points, **kwargs, smooth=True)
 ####GLOBALS###########
 
 VERSION = "0.4.1"
@@ -57,8 +59,8 @@ from graficsTk import sugestionBox
 class LineNumberText_Text(Text):
     def __init__(self, *args, **kwargs):
         Text.__init__(self, *args, **kwargs)
-        self.sugesttypes = {"default":"imgs/sugestion_64.png"}
-
+        self.sugesttypes = {"imports":"imgs/imp_suges.png","default":"imgs/sugestion_64.png","kww":"imgs/kww_suges.png","/":"imgs/coma_suges.png","var":"imgs/var_suges.png","cond":"imgs/condi_suges.png"}
+        self.kww_colect = {}
         self.configure(undo=True)
         self.filetree=None
         self.kwwNameVal=""
@@ -74,8 +76,9 @@ class LineNumberText_Text(Text):
         self.autocompVisible = True
         self.listboxa: Listbox = None
         self.listboxb:Listbox=None
+
         self.autocompleteOptions = []
-        self.autocompleteVar = Variable(value=self.autocompleteOptions)
+
 
         self.bind("<Key>", lambda u: self.after(10, self.queryKww))
         self.spawnPopup(None)
@@ -87,15 +90,23 @@ class LineNumberText_Text(Text):
 
     def genMarkers(self):
         self.colection = self.readJson()
-        for k in self.colection[0]:
-            self.kwws += self.colection[0][k]
-        self.tag_configure("kww2", foreground="#B3679B")
+        """for k in self.colection[0]:
+            self.kwws += self.colection[0][k]"""
+        print(self.kww_colect)
+        self.kww_colect["/"]=self.colection[0]["kww5"]
+        self.kww_colect["kww"] = self.colection[0]["kww4"]
+        self.kww_colect["imports"]=self.colection[0]["kww2"]
+        self.kww_colect["cond"] = self.colection[0]["kww"]
+
+        self.tag_configure("kww", foreground="#BB5387")
+
+        self.tag_configure("kww2", foreground="#A35FE2")
         # strings #6A994E
         self.tag_configure("string", foreground="#6A994E")
         self.tag_configure("<>", foreground="#32A287")
         self.tag_configure("kww3", foreground="#FBB02D")
-        self.tag_configure("kww4", foreground="#0E79B2")
-        self.tag_configure("kww5", foreground="#F2C57C")
+        self.tag_configure("kww4", foreground="#E89038")
+        self.tag_configure("kww5", foreground="#5F91E2")
         self.tag_configure("comment", foreground="#746F72")
 
     def querylineForSpace(self, ind):
@@ -109,26 +120,27 @@ class LineNumberText_Text(Text):
                 return ind1 + f".{len(line) - n}"
 
         return ind1 + ".0"
+    def complete(self,e):
 
+        ins = self.index(INSERT)
+        spi = self.querylineForSpace(ins)
+        print("spi", spi)
+        self.replace(spi, ins, self.autocompletetext.getSelected())
+        self.hidePopup()
+        self.after(10, self.queryKww)
+
+        return "break"
     def bindAutoComplete(self):
 
 
-        def complete(e):
 
-            ins = self.index(INSERT)
-            spi = self.querylineForSpace(ins)
-            print("spi", spi)
-            self.replace(spi, ins, self.autocompletetext.getSelected())
-            self.hidePopup()
-
-            return "break"
 
 
         self.bind("<Escape>", lambda u: self.hidePopup())
-        self.bind("<Tab>", complete)
+        self.bind("<Tab>", self.complete)
         self.master.bind("<Configure>", lambda u: self.hidePopup())
         self.bind("<MouseWheel>", lambda u: self.hidePopup())
-        self.bind("<FocusOut>", complete)
+        self.bind("<FocusOut>", self.complete)
 
         self.bind("<Control-s>", self.save)
     def save(self,u=None):
@@ -183,21 +195,46 @@ class LineNumberText_Text(Text):
         # print("e",b)
 
         if not self.autocompletewindow:
+
             self.autocompletewindow = w = Tk()
+            # roundet corners begin
+            w.withdraw()
+
+            w.geometry("-600-600")
+            w.attributes("-transparentcolor", "grey")
             w.configure(bg=Collor.bg_selected)
-            self.autocompletetext=sugestionBox.SugestionsBox(master=self.autocompletewindow, matchCollor=Collor.Success, bg=Collor.bg,
+
+            canvas = Canvas(self.autocompletewindow, bg="grey", highlightthickness=0)
+            self.autocompleteCanv=canvas
+            canvas.pack(fill=BOTH, expand=1)
+            round_rectangle(self.autocompleteCanv, 0, 0, w.winfo_reqwidth()+10, w.winfo_reqheight()+10, radius=16,fill=Collor.bg_lighter,outline=Collor.bg_light_l1, width=2)
+            #roundet corners end
+            self.autocompletetext=sugestionBox.SugestionsBox(master=canvas, matchCollor=Collor.Success,selectCollor="#597081", bg=Collor.bg_lighter,
                                                              imgtypes=self.sugesttypes,
-                                       fg=Collor.fg, font=font.Font(family="Calibre", size=14),window=self.autocompletewindow)
-            self.autocompletetext.pack()
+                                       fg=Collor.fg, font=font.Font(family="Calibre", size=18),window=self.autocompletewindow,relief="flat")
+            self.autocompletetext.pack(padx=(7,7),pady=(7,7))
             ass=self.autocompletetext
             def up(e):
-                ass.up("")
-                return "break"
+                if self.autocompVisible:
+                    ass.up("")
+
+                    return "break"
+            def k_return(e):
+                if self.autocompVisible:
+                    print(ass.items)
+                    if ass.selected!=0:
+                        self.complete("")
+
+                        return "break"
+                    else:
+                        self.hidePopup()
             def down(e):
-                ass.down("")
-                return "break"
+                if self.autocompVisible:
+                    ass.down("")
+                    return "break"
             self.bind('<Up>', up)
             self.bind('<Down>', down)
+            self.bind('<Return>', k_return)
 
 
             w.overrideredirect(True)
@@ -208,10 +245,10 @@ class LineNumberText_Text(Text):
             self.autocompletewindow.lift()
             self.autocompletetext.clear()
             na=self.kwwNameVal
-            for opt in self.autocompleteOptions:
+            for type,opt in self.autocompleteOptions:
                 a, b = self.kwwNameVal, opt[len(self.kwwNameVal):]
-                print("addet",self.kwwNameVal)
-                self.autocompletetext.addItem(a, b)
+                #print("addet",self.kwwNameVal)
+                self.autocompletetext.addItem(a, b,type0=type)
 
 
             if len(self.autocompleteOptions) <= 0:
@@ -219,6 +256,11 @@ class LineNumberText_Text(Text):
                 self.autocompletewindow.withdraw()
             else:
                 self.autocompVisible = True
+                w=self.autocompletetext
+                self.autocompleteCanv.delete("all")
+
+                #print("!w.winfo_reqwidth(), w.winfo_reqheight()",w.winfo_reqwidth(), w.winfo_reqheight())
+                round_rectangle(self.autocompleteCanv, 1, 1, w.winfo_reqwidth()+10, w.winfo_reqheight()+10, radius=16,fill=Collor.bg_lighter,outline=Collor.bg_light_l1, width=2)
                 self.autocompletewindow.deiconify()
 
             self.autocompletewindow.geometry("+%s+%s" % (x, y))
@@ -231,26 +273,20 @@ class LineNumberText_Text(Text):
         self.kwwNameVal=value
         if value.replace(" ", "") == "":
             return
-        print("Value", value, ins, i2)
+        #print("Value", value, ins, i2)
+        for e1 in self.kww_colect:
+            for e in self.kww_colect[e1]:
+                if e.startswith(value):
+                    if e==value:
+                        continue
+                    self.autocompleteOptions.append((e1, e))
 
-        for e in self.kwws:
-            if e.startswith(value):
-                self.autocompleteOptions.append(e)
-            else:
-                print(self.kwws)
 
-        print(self.autocompleteOptions)
-        if self.listboxa:
-            pass
-            self.listboxa.configure(height=len(self.autocompleteOptions))
-        if self.listboxb:
-            pass
-            self.listboxb.configure(height=len(self.autocompleteOptions))
 
     def queryKww(self):
         self.getPosible()
 
-        self.autocompleteVar.set(self.autocompleteOptions)
+
 
         self.spawnPopup(self.index(tkinter.INSERT))
 
@@ -271,19 +307,21 @@ class LineNumberText_Text(Text):
                         break
                     stOld = st
 
-                    print(st)
+                    #print(st)
                     end = self.index('%s+%dc' % (st, len(a)))
                     alowedpars = ["[", "]" "(", ")", ".", " ", "\n"]
-                    print("----", self.get('%s+%dc' % (end, 1)))
+                    #print("----", self.get('%s+%dc' % (end, 1)))
                     ec = self.get(self.index(end), self.index('%s+%dc' % (end, 1)))
                     bc = self.get(self.index('%s-%dc' % (st, 1)), self.index(st))
                     if (ec == "None") | (ec in alowedpars):
                         if (bc == "None") | (bc in alowedpars):
                             self.tag_add(tag, st, end)
                         else:
-                            print("bc", bc, a, type(ec))
+                            pass
+                            #print("bc", bc, a, type(ec))
                     else:
-                        print("ec", ec, a, type(ec))
+                        pass
+                        #print("ec", ec, a, type(ec))
 
         st = "0.0"
         end = "0.0"
@@ -426,8 +464,10 @@ def CreateToolTip(widget1, text):
     widget1.bind('<Leave>', leave)
 
 import exeptions_
+pathbox=None
 from contextlib import redirect_stdout
 def openEditor(mainfile,dict1):
+    global pathbox
     t = Tk()
     t.iconbitmap("imgs/ico.ico")
     t.title("Minedashbin - Editor")
@@ -446,7 +486,10 @@ def openEditor(mainfile,dict1):
     length=280,style="special1.Horizontal.TProgressbar"
     )
     f.pack(fill="x")
-    createLabel1(fb,"vers. "+VERSION,bg=Collor.bg_lighter).pack(side="left",padx=(5,0))
+    pathbox= sugestionBox.PathShow(master=fb)
+    pathbox.pack(side="left",padx=(5,0))
+
+    #createLabel1(fb,"vers. "+VERSION,bg=Collor.bg_lighter).pack(side="left",padx=(5,0))
 
     fb.pack(fill="x",side="bottom")
     fcon=Frame(bg=Collor.bg)
@@ -476,7 +519,7 @@ def openEditor(mainfile,dict1):
             f12.insert(tkinter.END,"\n>>> "+c)
             f12.disable(True)
             return "break"
-        print("created")
+        #print("created")
         f12_imp.bind("<Return>",insertEnter)
         return f12,r12
     tb.addButton(text="➕",id=9999999,command=createConsole)
@@ -565,17 +608,37 @@ def openEditor(mainfile,dict1):
 
 
 
-    print("path",mainfile[::-1].split("/",1)[1][::-1])
+    #print("path",mainfile[::-1].split("/",1)[1][::-1])
     a.generateFileTree(mainfile[::-1].split("/",1)[1][::-1].replace("/","\\"))
 
     def openfile(e=None,file=None):
+        # saving oldfile
         text.save()
+        # reading new
         if not file:
             file = a.getFile()
-        with open(file=file,mode="r", encoding='utf-8') as f:
-            text.replace("0.0", tkinter.END, "")
-            text.insert("0.0", f.read())
-            text.queryKww()
+            if file==None:
+                return
+
+
+        try:
+            with open(file=file,mode="r", encoding='utf-8') as f:
+                contents=f.read()
+                text.replace("0.0", tkinter.END, "")
+                text.insert("0.0", contents)
+                text.queryKww()
+            pathbox.delall()
+
+            mainfilepath = mainfile[::-1].split("/", 2)[2][::-1].replace("/", "\\").split("\\")
+            items = file.replace("/", "\\").split("\\")[len(mainfilepath):]
+            itemcount = len(items) - 1
+            for n, e in enumerate(items):
+                pathbox.cl(e)
+                if n != itemcount:
+                    pathbox.adddecorator(">")
+        except Exception:
+            print("Error")
+            return
         text.openFileName=file
 
     a.bind("<<OpenFile>>", openfile)
@@ -596,7 +659,7 @@ def openEditor(mainfile,dict1):
     text.bind("<<Change>>", tel.redraw)
     text.bind("<Configure>", tel.redraw)
     tel.attach(text)
-    print(a.fileIds)
+    #print(a.fileIds)
     t.mainloop()
 
 

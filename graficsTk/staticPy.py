@@ -63,6 +63,7 @@ class Collor():
     Success= "#44AF69"#6EEB83
     Neutral= "#1BE7FF"
     Ice="#1B98E0"
+
     Polar="#E8F1F2"
 
     if mode == "dark":
@@ -74,6 +75,7 @@ class Collor():
         bg_lighter="#515151"
         fg_inverted = "#161616"
         selector_none="#2A6780"
+        bg_light_l1="#797979"
         selector_is="#247BA0"
         bg_cancel = "#3d3d3d"
         bg_reinst = "#212121"
@@ -84,6 +86,7 @@ class Collor():
         bg = "#232327"
         bg_darker = "#151517"
         fg = "#D7CACD"
+        bg_light_l1 = "#797979"
         highlight = "#F15152"
         info = "#157145"
         bg_lighter = "#515151"
@@ -99,6 +102,7 @@ class Collor():
         bg = "#232327"
         bg_darker = "#151517"
         fg = "#E1F2FE"
+        bg_light_l1 = "#797979"
         highlight = "#23CE6B"
         info = "#157145"
         bg_lighter = "#515151"
@@ -118,7 +122,7 @@ class Collor():
         fg = "#161616"
         fg_inverted = "silver"
         bg_cancel = bg
-
+        bg_light_l1 = "#797979"
         bg_lighter=bg
         info = "#157145"
         highlight = "#2B9EB3"
