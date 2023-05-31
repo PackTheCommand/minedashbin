@@ -55,6 +55,7 @@ class TabBook(Frame):
     def __init__(self,title="Tabs",**kwargs):
         Frame.__init__(self,**kwargs)
         self.labels={}
+        self.oncloses={}
         self.labelFrame=Frame(master=self,bg=Collor.bg)
         self.labelFrame.pack(fill="x")
         self.firstButton=None
@@ -136,15 +137,19 @@ class TabBook(Frame):
         close.bind("<Button-1>", lambda e,s=self: s.destroyTab(id4))
 
         self.labels[id4]=(f,l,fm)
-    def addTab(self,name,frame:tkinter.Widget):
+    def addTab(self,name,frame:tkinter.Widget,onClose=None):
 
         ind=self.showFsw.puschFrame(frame)
+        self.oncloses[ind]=onClose
 
         self.addTabLabel(name,ind)
         return ind
     def destroyTab(self,id):
+        close=self.oncloses[id]
         f,l,indic=self.labels[id]
         f.pack_forget()
+        if close:
+            close()
     def nav(self,index):
         self.expanded=True
         def select(fr):

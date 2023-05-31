@@ -1,6 +1,7 @@
 //testfile 23
-
+#version 19.4;
 cc minebase;
+
 p=1;
 tz=2;
 include pointer/pointer;
@@ -24,6 +25,7 @@ myfunc(1,1,1,1);
 tls(1,1,1,1);
 
 }
+
 func main(name){shr selE "@e[type=creeper]";
 say hi;
 }
@@ -42,6 +44,11 @@ a=12;
 
 say Loaded;
 func doNothing(){}
+
+
+
+
+
 
 
 

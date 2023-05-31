@@ -96,7 +96,7 @@ def isValid(test):
             #print(n,word)
             err=[]
             for ty in templ[n].split("|"):
-                print("ty",ty,word)
+                #print("ty",ty,word)
 
                 if istype(word,ty):
                     err= []
@@ -132,6 +132,6 @@ example="fill 12 12 12 12 12 12 minecraft:dirt\n" \
         "fill 3f dj fdf gfds g fd gfd gfd gfd".split("\n")
 
 
-print(parse(example))
+#print(parse(example))
 
 

@@ -4,26 +4,85 @@ import random
 import re
 import shutil
 import time
-from tkinter import Label, Toplevel
-
-import setings
 
 import templade, exeptions_
+import json
 
-minecraft_commands = ["execute", "fill", "say", "datapack", "debug", "help", "jfr", "setblock",
-                      "locate", "perf", "reload", "scoreboard", "seed", "me", "msg", "tell",
-                      "tellraw", "w", "advancement", "attribute", "bossbar", "clear", "damage", "data", "effect",
-                      "enchant", "ep",
-                      "gamemode", "give", "item", "kill", "loot", "particle", "playsound", "recipe", "ride",
-                      "spawnpoint",
-                      "stopsound", "tag", "team", "tp", "title", "trigger", "clone",
-                      "difficulty", "place", "fillbiome", "forceload", "data"]
+
+class Settings:
+    def __init__(self, path):
+        self.path = path
+        try:
+            with open(path, "r") as f:
+                jl=json.load(f)
+                if len(jl)==0:
+                    raise FileNotFoundError
+                self.settings = jl[0]
+                if self.settings=={}or self.settings==None:
+                    raise FileNotFoundError
+        except FileNotFoundError:
+            print("No setting.json found using default settings")
+            self.settings = {"All-Projects":{},"Current-Project":None,"pr_ids":[]}
+            self.save()
+            self.save()
+
+        self.defuldOptions={}
+
+
+
+    def save(self):
+        with open(self.path, "w") as f:
+            json.dump([self.settings], f)
+    def addToExistingSetting(self,key,value):
+        try:
+            self.settings[key] +=value
+            return True
+        except Exception:
+            pass
+        return False
+
+    def removeFromExistingSetting(self,key,value):
+        try:
+            self.settings[key].remove(value)
+            return True
+        except Exception:
+            pass
+        return False
+    def get(self, key):
+        try:
+            return self.settings[key]
+        except KeyError:
+            try:
+                return self.defuldOptions[key]
+            except KeyError:
+                pass
+                print(self.settings)
+                print("Unknown Seting",key)
+                return None
+
+    def set(self, key, value):
+        try:
+            self.settings[key] = value
+            return True
+        except Exception:
+            pass
+        return False
+
+    def delete(self, key):
+        try:
+            self.settings.pop(key)
+            return True
+        except Exception:
+            pass
+        return False
+
+minecraft_commands = []
 num = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", " "]
 hasch = ["#", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f"]
 
 from sys import argv
 
-Seti = setings.Settings("settings.json")
+Seti = Settings("settings.json")
 
 
 def create_project(name=None,sourcefile=None,outputfile=None,sccrete=False):
@@ -256,7 +315,8 @@ class NewParser:
         self.str_func_def_block = ""
         self.special_ops_files = []
         self.text = ""
-        self.blocks = {"_include": [], "_jumper": "", "_funcvar": [], "_allVars": {}}
+        self.blocks = {"_include": [], "_jumper": "", "_funcvar": [], "_allVars": {},"ms-com-version":[],"rules":{}}
+
         # self.section= {}
 
     def load(self, file=""):
@@ -530,6 +590,19 @@ class NewParser:
             elif a.startswith("native"):
                 na += [a.split(" ")[-1]]
                 self.funcs["main"].remove(a)
+            elif a.startswith("#version"):
+                print("found version",)
+
+                self.funcs["main"].remove(a)
+
+                self.blocks["ms-com-version"] += [a.split(" ")[-1]]
+
+            elif a.startswith("#rule"):
+
+                self.funcs["main"].remove(a)
+                s=a.split(" ")
+                self.blocks["rules"][s[1]]=s[2]
+
             elif a.lower().startswith("@on-tick"):
                 self.tick_SCEDUE += [a.split(" ")[-1]]
                 self.funcs["main"].remove(a)
@@ -645,6 +718,10 @@ class NewParser:
         with open(pathfunc + "/_mbd_scoreboards" + fx, "w") as f:
             for a in self.functionVariableScoreboards:
                 f.write(a)
+            baseblock="scoreboard objectives add __mbd__core__calc dummy\n" \
+                      "scoreboard players set __mbd__core__calc #coreA 0\n"\
+                        "scoreboard players set __mbd__core__calc #coreB 0\n"
+            f.write("\n"+baseblock)
 
         with open(pathfunc + "/routine_del_cleanup" + fx, "w") as f:
 
@@ -1119,8 +1196,12 @@ class NewParser:
 
 includes = []
 requires = []
+
+def loadcomvers(name):
+    with open("comver/"+name+".minfo")as f :
+        return json.load(f)
 def compile(silentEx=False):
-    global includes,requires
+    global includes,requires,minecraft_commands
     includes = []
     requires = []
 
@@ -1149,6 +1230,19 @@ def compile(silentEx=False):
             if (includesNew == includes) and (requiresNew == requires):
                 break
             includes, requires = includesNew, requiresNew
+        comset="--newest"
+        higest=0.0
+        for vr in p.blocks["ms-com-version"]:
+            fl0=float(vr.split("-",1)[0])
+            if float(vr.split("-",1)[0])>higest:
+                higest=fl0
+                comset=vr
+        if os.path.exists("/comver/"+comset+".minfo"):
+            exeptions_.throwError.comversionNotInstaled("comver/"+comset+".minfo")
+
+        minecraft_commands=list(loadcomvers(comset)[0].keys())
+        print(f"// using Comversion {higest}, ({comset})")
+
         print("Compiling-Started...")
         p.createFuncBlock()
         p.initializeCompileReferenceKeywords()

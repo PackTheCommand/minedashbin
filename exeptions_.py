@@ -121,4 +121,9 @@ class throwError:
     def unknownShort(sh):
         ex(f"Err (C:022): Unknown Short '{sh}'  ")
 
+    @staticmethod
+    def comversionNotInstaled(file):
+        ex(f"Err (C:023): No Comment version '{file}' installed   ")
+        pass
+
 
