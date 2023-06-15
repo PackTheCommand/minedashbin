@@ -25,6 +25,8 @@ myfunc(1,1,1,1);
 tls(1,1,1,1);
 
 }
+say e;
+jfr start;
 
 func main(name){shr selE "@e[type=creeper]";
 say hi;
@@ -33,7 +35,7 @@ say hi;
 func tls(new,parser,privat,nuller){
 
 
-fill fd 34 34 34 34 34 minecraft:dirt;
+fill 23 34 34 34 34 34 minecraft:dirt;
 fill ~ ~ ~ ~ ~ ~ dirt;
 execute as <selE> run say hi;
 }
@@ -44,6 +46,11 @@ a=12;
 
 say Loaded;
 func doNothing(){}
+
+
+
+
+
 
 
 

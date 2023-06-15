@@ -7,7 +7,12 @@ import time
 
 import templade, exeptions_
 import json
+devMode=False
 
+def dprint(*kw,**kwargs):
+    if devMode: print(*kw,**kwargs)
+def iprint(*kw,**kwargs):
+    print(*kw,**kwargs)
 
 class Settings:
     def __init__(self, path):
@@ -21,7 +26,7 @@ class Settings:
                 if self.settings=={}or self.settings==None:
                     raise FileNotFoundError
         except FileNotFoundError:
-            print("No setting.json found using default settings")
+            dprint("No setting.json found using default settings")
             self.settings = {"All-Projects":{},"Current-Project":None,"pr_ids":[]}
             self.save()
             self.save()
@@ -56,8 +61,8 @@ class Settings:
                 return self.defuldOptions[key]
             except KeyError:
                 pass
-                print(self.settings)
-                print("Unknown Seting",key)
+                dprint(self.settings)
+                dprint("Unknown Seting",key)
                 return None
 
     def set(self, key, value):
@@ -142,7 +147,7 @@ def getIfinstructParts(string: str) -> tuple[list[str, str, str], list[str, str]
         fl[index] += char
 
     return (fl, types)
-
+skipSave=False
 import setupUi
 if len(argv) >= 2:
     if "--new" in argv:
@@ -151,6 +156,10 @@ if len(argv) >= 2:
     if "--setup-ui" in argv:
         r=setupUi.openSetup()
         create_project(*r,"y")
+
+    if "--nosave" in argv:
+
+        skipSave=True
 
     for s in argv:
         if s.startswith("--project"):
@@ -169,7 +178,7 @@ if Seti.get("All-Projects") == {}:
     print("Error:", "No project found, specify a project with '--new'")
     exit()
 
-print("project",Seti.get("All-Projects"),Seti.get("Current-Project"))
+dprint("project",Seti.get("All-Projects"),Seti.get("Current-Project"))
 projectName = Seti.get("All-Projects")[Seti.get("Current-Project")]["name"]
 setupUi.PR_NAME=projectName
 projectout = Seti.get("All-Projects")[Seti.get("Current-Project")]["out"]
@@ -305,6 +314,7 @@ class NewParser:
         self.pointer = [0]
         self.section = ""
         self.form = []
+        self.id_to_line_translationLayer= {0:[]}
         self.shorts = {}
         self.files = {}
         self.functionVariableScoreboards = []
@@ -342,6 +352,8 @@ class NewParser:
             tree = self.getPoint()
             if char not in [" ", "\n"]:
                 lastchar = char
+            if char=="\n":
+                self.id_to_line_translationLayer[0]+=[(charNr,)]
 
             if (char != " ") & (char != "\n") & (char not in ["{", "}", "[", "]", ";"]):
                 lineisEmpty = False
@@ -352,7 +364,7 @@ class NewParser:
             # if line BreakProcedure
 
             if ((self.text[charNr - 1] == "/") & (char == "/") & (not insideString) & (not inComment)):
-                print("Entered comment", bytes(self.text[charNr - 2], "UTF-8"))
+                dprint("Entered comment", bytes(self.text[charNr - 2], "UTF-8"))
                 if (not (self.text[charNr - 2] in "{}[]\n")):
 
                     if linehasSimicolon | lineisEmpty:
@@ -371,7 +383,7 @@ class NewParser:
 
                 lineNum += 1
                 if inComment:
-                    print("LEntered comment")
+                    dprint("LEntered comment")
 
                     inComment = False
                     continue
@@ -383,7 +395,7 @@ class NewParser:
                         linehasSimicolon = False
 
                     else:
-                        print("com", char, )
+                        dprint("com", char, )
                         exeptions_.throwError.MissingSimicolon(lineNum - 1)
 
                 if insideString:
@@ -391,7 +403,7 @@ class NewParser:
 
                 continue
             if inComment:
-                print("skipp ", char)
+                dprint("skipp ", char)
                 continue
             if ((char == "\"") | (char == "'")) & (not escaped):
                 stringOpendInLine = lineNum
@@ -591,7 +603,7 @@ class NewParser:
                 na += [a.split(" ")[-1]]
                 self.funcs["main"].remove(a)
             elif a.startswith("#version"):
-                print("found version",)
+                dprint("found version",)
 
                 self.funcs["main"].remove(a)
 
@@ -663,6 +675,10 @@ class NewParser:
         pass
 
     def createFile(self, requires, includes):
+        global skipSave
+        if skipSave:
+            print("Skiped Saving (--nosave)")
+            return
         global projectName
         fx = ".mcfunction"
         pathfunc = projectout+"/" + projectName + "/data/" + projectName + "/functions"
@@ -1196,10 +1212,18 @@ class NewParser:
 
 includes = []
 requires = []
-
+import mcCommandPasser
 def loadcomvers(name):
-    with open("comver/"+name+".minfo")as f :
-        return json.load(f)
+    try:
+        with open("comver/"+name+".minfo")as f :
+            l=json.load(f)
+            mcCommandPasser.allCommands=l[0].keys()
+            return l
+    except FileNotFoundError:
+        exeptions_.throwError.comversionNotInstaled(name)
+    except Exception:
+        exeptions_.throwError.corupted_file(name,"?")
+
 def compile(silentEx=False):
     global includes,requires,minecraft_commands
     includes = []
@@ -1231,6 +1255,7 @@ def compile(silentEx=False):
                 break
             includes, requires = includesNew, requiresNew
         comset="--newest"
+        print(p.id_to_line_translationLayer)
         higest=0.0
         for vr in p.blocks["ms-com-version"]:
             fl0=float(vr.split("-",1)[0])
@@ -1267,7 +1292,8 @@ def compile(silentEx=False):
         a,b=str(round(end_time - start_time, 6) * 1000).split(".",1)
         return a+b[:3]+" ms"
 
-    except OSError as e:
+    except IOError as e:
+
         if not silentEx:
             exeptions_.throwError.CompilationError(e)
         return False

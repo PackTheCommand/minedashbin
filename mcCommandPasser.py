@@ -1,65 +1,23 @@
-import re
-from tkinter.scrolledtext import example
+import json
+
 
 typestr="$str"
 typeint="$int"
-template={
-    "fill":
-        "fill $int|~ $int|~ $int|~ $int|~ $int|~ $int|~ $str"
-}
+typeany="$*any"
+template={}
+allCommands=[]
+def getCommands():
+    global allCommands,template
 
-allCommands=[
-      "advancement",
-      "attribute",
-      "bossbar",
-      "clear",
-      "clone",
-      "damage",
-      "data",
-      "datapack",
-      "debug",
-      "difficulty",
-      "effect",
-      "enchant",
-      "ep",
-      "execute",
-      "fill",
-      "fillbiome",
-      "forceload",
-      "gamemode",
-      "give",
-      "help",
-      "item",
-      "jfr",
-      "kill",
-      "locate",
-      "loot",
-      "me",
-      "msg",
-      "particle",
-      "perf",
-      "place",
-      "playsound",
-      "recipe",
-      "reload",
-      "ride",
-      "say",
-      "scoreboard",
-      "seed",
-      "setblock",
-      "spawnpoint",
-      "stopsound",
-      "tag",
-      "team",
-      "tell",
-      "tellraw",
-      "title",
-      "tp",
-      "trigger",
-      "w"
-]
+    with open("comver/--newest.minfo") as f:
+        l = json.load(f)
+    template=l[0]
+    allCommands=list(l[0].keys())
 
 
+
+getCommands()
+#print(allCommands)
 
 
 
@@ -69,12 +27,16 @@ def isStrconverdiable(test):
     return False
 
 def istype(word,type):
+    #print("ww",word,type)
     match type:
         case "$str":
+
             return  (not word.isdigit())
 
         case "$int":
+
             return word.replace(".","").isdigit()
+
         case _:
             return word==type
 
@@ -83,7 +45,7 @@ def istype(word,type):
 
 def isValid(test):
     wl=test.split(" ")
-    #print(wl,wl[0] not in template)
+    #print("1",wl,wl[0] not in template,wl[0], template["msg"])
     if wl[0] not in template:
 
         return []
@@ -91,12 +53,18 @@ def isValid(test):
     templ=template[wl[0]].split(" ")
     errors=[]
     alreadyscaned=""
+    done = False
     try:
         for n,word in enumerate(wl):
             #print(n,word)
+            if done:
+                break
             err=[]
             for ty in templ[n].split("|"):
                 #print("ty",ty,word)
+                if ty==typeany:
+                    done=True
+                    break
 
                 if istype(word,ty):
                     err= []
@@ -124,14 +92,14 @@ def parse(lines:[str]):
 
         errors+= [allE]
 
-    #print("errors",errors)
+    print("errors",errors)
     return errors
 
 
-example="fill 12 12 12 12 12 12 minecraft:dirt\n" \
-        "fill 3f dj fdf gfds g fd gfd gfd gfd".split("\n")
+"""example="msg 543\n" \
+        "".split("\n")
+"""
 
-
-#print(parse(example))
-
+"""print(parse(example))
+"""
 

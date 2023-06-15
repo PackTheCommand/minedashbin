@@ -10,7 +10,7 @@ from tkinter import ttk, font
 from tkinter.ttk import Style, Sizegrip
 
 import _tkinter
-from pyrr.rectangle import height
+
 
 from graficsTk import *
 import tkinter.filedialog as fd
@@ -92,15 +92,16 @@ class LineNumberText_Text(Text):
 
         def scedueErrSearch():
             self.scannlinesForError()
-            self.after(1000, scedueErrSearch)
+            self.after(1500, scedueErrSearch)
 
-        self.after(1000, scedueErrSearch)
+        self.after(1500, scedueErrSearch)
 
     def scannlinesForError(self):
         lines = []
 
         for line in self.get("0.0", tkinter.END).split("\n"):
             lines += [line]
+        self.tag_remove("error","0.0", tkinter.END)
         allErrors = mcCommandPasser.parse(lines)
         # print("scannlinesForError",allErrors)
         # self.tag_remove("error","0.0",tkinter.END)

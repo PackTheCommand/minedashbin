@@ -18,6 +18,10 @@ def ex(errc):
 
 class throwError:
     @staticmethod
+    def corupted_file(file, l):
+        ex(f"Err (C:000): corrupted file '{file}' [Compiler-fails] in line " + str(l))
+
+    @staticmethod
     def unknownOperator(op, l):
         ex(f"Err (C:001): Unknown operator '{op}' [Compiler-fails] in line " + str(l))
 
@@ -71,11 +75,9 @@ class throwError:
     def schortGivenToMuchArgs(synt):
         ex(f"Err (C:012): Short needs two arguments providet: {synt} ")
 
-
     @staticmethod
     def ModuleNotFound(modulepath):
-        ex(f"Err (C:013): Module {modulepath} not found")
-
+        ex(f"Err (C:013): Module {modulepath} not found")@staticmethod
 
     @staticmethod
     def StringNeverClosedErr(line):
