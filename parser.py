@@ -667,11 +667,13 @@ class NewParser:
             key = key.replace("this.", "")
             b += templade.getFuncTemplate(key, argsC, argsN.split(","))
             fc = "scoreboard objectives add _mdb_" + key + " dummy\n"
-            for arg in argsN.split(","):
-                # print("args123",arg)
-                fc += "scoreboard players set #_mdb_" + arg + " _mdb_" + key + " 0\n"
-            self.ScoreboaRD_delete += "scoreboard objectives remove _mdb_" + key + "\n"
-            self.functionVariableScoreboards += [fc]
+            if not argsN.replace(" ","")=="":
+
+                for arg in argsN.split(","):
+                    # print("args123",arg)
+                    fc += "scoreboard players set #_mdb_" + arg.replace(" ","") + " _mdb_" + key + " 0\n"
+                self.ScoreboaRD_delete += "scoreboard objectives remove _mdb_" + key + "\n"
+                self.functionVariableScoreboards += [fc]
         # #print("bi",b)
         self.str_func_def_block = b
 
@@ -738,9 +740,10 @@ class NewParser:
         with open(pathfunc + "/_mbd_scoreboards" + fx, "w") as f:
             for a in self.functionVariableScoreboards:
                 f.write(a)
-            baseblock="scoreboard objectives add __mbd__core__calc dummy\n" \
-                      "scoreboard players set __mbd__core__calc #coreA 0\n"\
-                        "scoreboard players set __mbd__core__calc #coreB 0\n"
+            baseblock="scoreboard objectives add _mdb_core__calc dummy\n"
+            for i in self.funcs.keys():
+                baseblock += f"scoreboard objectives add _mdb_{i.replace('this.','')} dummy\n"
+
             f.write("\n"+baseblock)
 
         with open(pathfunc + "/routine_del_cleanup" + fx, "w") as f:
@@ -749,7 +752,7 @@ class NewParser:
         # print("keys", self.files)
         for a in self.files.keys():
 
-            with open(pathfunc + "/_mbd_" + a.replace("this.", "") + "_" + fx, "w") as f:
+            with open(pathfunc + "/_mbd_" + a.replace("this.", "") + "_" + fx, "w",encoding="UTF_8") as f:
                 # a is the filename
 
                 if type(self.files[a]) == list:
@@ -918,7 +921,7 @@ class NewParser:
                             else:
                                 setVar += "$" + e[1] + " "
 
-                        newList += [newComp("@v-l", setVar + typeofVAR)]
+                        newList += [newComp("@v-l",lineList[li])]
 
                         if name not in self.blocks["_allVars"]:
                             self.blocks["_allVars"][name] = Slist[1]
@@ -1093,10 +1096,11 @@ class NewParser:
                     # print("")
                     # print("varfounf",line)
 
-                    ls = line.split(" ")
+
+                    ls2=line.replace(" ","").split("=",1)
 
                     # print("val",ls)
-                    sc_name = ls[0].replace("this.", "")
+                    """sc_name = ls[0].replace("this.", "")
                     operation = ls[1].replace("$", "")
                     add_to_sc = ls[2].replace("this.", "")
 
@@ -1133,8 +1137,9 @@ class NewParser:
                         else:
 
                             l = ""
-                    # print(l)
-                    formatedLines += prefix + l + "\n"
+                    # print(l)"""
+                    f=core.functify_aquasion(ls2[0],ls2[1],filename,prefix)  # todo : Get funtion for var
+                    formatedLines += core.scoreTable + "\n"
                 elif opX == "@inj":
 
                     formatedLines += prefix + self.removeStringIdentifier(line[6:]) + "\n"
@@ -1144,7 +1149,8 @@ class NewParser:
                 elif opX == "@nai":
                     formatedLines += prefix + line + "\n"
                 elif opX=="@pr_out":
-                    formatedLines+=prefix +core.pr_outVar(line.split(" ",2)[1],line.split(" ",1)[0])
+                    lsp=line.split(" ",2)
+                    formatedLines+=prefix +core.pr_outVar(lsp[0].replace("this.",""),lsp[2].replace("this.",""))
                 elif opX == "@cc-inj":
                     formatedLines += prefix + line + "\n"
 

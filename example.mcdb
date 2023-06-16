@@ -8,8 +8,15 @@ include pointer/pointer;
 include shr/ifs;
 setblock 1 1 1 dirt;
 func empty(){
+
+
     test=3;
     prout test;
+    clock=20;
+
+    prout clock;
+    logon=clock+test;
+    prout logon;
 }
 
 
