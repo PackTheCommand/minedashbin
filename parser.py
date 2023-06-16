@@ -7,6 +7,9 @@ import time
 
 import templade, exeptions_
 import json
+
+from minedashbin import core
+
 devMode=False
 
 def dprint(*kw,**kwargs):
@@ -599,6 +602,7 @@ class NewParser:
                 l += [a.replace("include", "").replace(" ", "")]
                 self.blocks["_include"] += [a.split(" ")[-1]]
 
+
             elif a.startswith("native"):
                 na += [a.split(" ")[-1]]
                 self.funcs["main"].remove(a)
@@ -832,6 +836,9 @@ class NewParser:
 
                     newList += [newComp("@v-f", lineList[li])]
                     pass
+                elif (Slist[0] =="prout"):
+
+                    newList += [newComp("@pr_out", key+" "+lineList[li])]
 
                 elif (Slist[0] in minecraft_commands):
 
@@ -1136,6 +1143,8 @@ class NewParser:
                     formatedLines += prefix + (self.removeStringIdentifier(line)) + "\n"
                 elif opX == "@nai":
                     formatedLines += prefix + line + "\n"
+                elif opX=="@pr_out":
+                    formatedLines+=prefix +core.pr_outVar(line.split(" ",2)[1],line.split(" ",1)[0])
                 elif opX == "@cc-inj":
                     formatedLines += prefix + line + "\n"
 
