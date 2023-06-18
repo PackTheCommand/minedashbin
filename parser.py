@@ -8,7 +8,7 @@ import time
 import templade, exeptions_
 import json
 
-from minedashbin import core
+from minedashbin import variableHandler_core
 
 devMode=False
 
@@ -809,9 +809,6 @@ class NewParser:
                 fs = re.sub("\s\s+", " ", string)
                 # print("<<<",fs)
                 Slist = re.split(",|=| ", fs)
-                # print("<<< ",Slist)
-                # #print(Slist)
-                # print(Slist,minecraft_commands.count(Slist[0]),minecraft_commands)
 
                 if "this." + Slist[0] in self.funcs.keys():
                     ##print(f"{Slist[0]} is a function")
@@ -905,12 +902,9 @@ class NewParser:
                         # print(".,",Slist[0])
 
                         name = key + "." + Slist[0]
-                        ##print("TempVar")
 
                         forml = trygetAddType(lineList[li])
 
-                        # print("forml",forml,lineList[li])
-                        # print(forml[2])
                         typeofVAR = getType(forml[2][1])
 
                         setVar = ""
@@ -930,11 +924,7 @@ class NewParser:
 
                     elif (Slist[0].split(" ")[
                               0] in paser_keywords_corespontents.keys()):  # todo : implement new cc system #migration
-                        # print("--")
-                        # print()
-                        # print(Slist)
-                        # print("sl",Slist[0])#
-                        # print("__")
+
                         try:
                             line = []
                             line += Slist
@@ -1040,7 +1030,7 @@ class NewParser:
         for filename in list(self.files.keys()):
 
             old_lines = self.files[filename]
-            # print(old_lines,filename)
+
             filename = filename.replace("this.", "")
             formatedLines = ""
             linePointer = 0
@@ -1048,19 +1038,17 @@ class NewParser:
             lastrequires = ""
             prefix = ""
             while linePointer < len(old_lines):
-                # print("spm",allLines[linePointer],type(allLines[linePointer]))
+
                 opX = allLines[linePointer]["op"]
                 requires = allLines[linePointer]["requires"]
 
                 line = self.replaceShort(allLines[linePointer]["payload"])
-                # print("shr",self.shorts)
-                # print(opX)
-                # print("prfix9", requires,allLines[linePointer])
+
                 if requires != None:
 
                     try:
                         prefix = ""
-                        # print("contsep",getStringSeperated(requires,False))
+
                         for e in getStringSeperated(requires, False):
                             if e == "":
                                 continue
@@ -1068,7 +1056,7 @@ class NewParser:
                                 e = self.replaceShort(e)
                             prefix += self.removeStringIdentifier(e) + " "
                         prefix = prefix.replace("  ", " ")
-                        # print("prfix",prefix,"")
+
                     except:
                         exeptions_.throwError.invalidIfinstucktion(requires)
                         """ elif requires.startswith("#if"):if requires.startswith("#req"):
@@ -1138,8 +1126,8 @@ class NewParser:
 
                             l = ""
                     # print(l)"""
-                    f=core.functify_aquasion(ls2[0],ls2[1],filename,prefix)  # todo : Get funtion for var
-                    formatedLines += core.scoreTable + "\n"
+                    f=variableHandler_core.functify_aquasion(ls2[0],ls2[1],filename,prefix)  # todo : Get funtion for var
+                    formatedLines += variableHandler_core.scoreTable + "\n"
                 elif opX == "@inj":
 
                     formatedLines += prefix + self.removeStringIdentifier(line[6:]) + "\n"
@@ -1150,7 +1138,7 @@ class NewParser:
                     formatedLines += prefix + line + "\n"
                 elif opX=="@pr_out":
                     lsp=line.split(" ",2)
-                    formatedLines+=prefix +core.pr_outVar(lsp[0].replace("this.",""),lsp[2].replace("this.",""))
+                    formatedLines+= prefix + variableHandler_core.pr_outVar(lsp[0].replace("this.", ""), lsp[2].replace("this.", ""))
                 elif opX == "@cc-inj":
                     formatedLines += prefix + line + "\n"
 
