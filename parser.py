@@ -347,6 +347,7 @@ class NewParser:
         linehasSimicolon = False
         lineisEmpty = True
         lineNum = 1
+        afterEQUALS=False
         inComment = False
         stringOpendInLine = 0
 
@@ -357,12 +358,17 @@ class NewParser:
                 lastchar = char
             if char=="\n":
                 self.id_to_line_translationLayer[0]+=[(charNr,)]
+                afterEQUALS=False
 
             if (char != " ") & (char != "\n") & (char not in ["{", "}", "[", "]", ";"]):
                 lineisEmpty = False
 
+            if char=="=":
+                afterEQUALS=True
+
             if char == ";":
                 linehasSimicolon = True
+                afterEQUALS = False
 
             # if line BreakProcedure
 
@@ -418,18 +424,20 @@ class NewParser:
             if (char == "\\") & insideString:
                 stringOpendInLine = lineNum
                 escaped = True
+            if not afterEQUALS:
+                if (((char == "{") | (char == "}") | (char == "(") | (char == ")") | (char == "[") | (char == "]") | (
+                        char == ";")) & (not insideString)):
 
-            if (((char == "{") | (char == "}") | (char == "(") | (char == ")") | (char == "[") | (char == "]") | (
-                    char == ";")) & (not insideString)):
+                    if self.section != "":
+                        # #print(self.section)
+                        self.form += [self.section]
+                        self.section = ""
+                        # #print("char",char)
+                    if char != ";":
+                        self.form += [char]
 
-                if self.section != "":
-                    # #print(self.section)
-                    self.form += [self.section]
-                    self.section = ""
-                    # #print("char",char)
-                if char != ";":
-                    self.form += [char]
-
+                else:
+                    self.section += str(char)
             else:
                 self.section += str(char)
 
