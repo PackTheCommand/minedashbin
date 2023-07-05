@@ -5,14 +5,14 @@
       "if", "else"
     ],
     "kww2": [
-      "include", "native"
+      "include", "native","ext"
     ],
     "kww3": [
-      "(", ")",";","[","]"
+      "(", ")",";","[","]","=>"
     ],
     "kww4":
     [
-      "func","shr"
+      "func","shr","@on-tick","@on-load"
     ],
     "kww5": [
       "advancement",

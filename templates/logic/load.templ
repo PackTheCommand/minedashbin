@@ -1,0 +1,25 @@
+
+
+{
+  "scoreboards": ["scoreboard objectives add _logic_routine_load"],
+
+  "req": ["%n%","%max%","%order%","%function%"],
+
+  "runtime-prefix": "execute if score #%n% _logic_routine_load matches %order% run schedule %function% 1t",
+
+
+  "setup": ["scoreboard player set #%n% _logic_routine_load 0"],
+
+  "tick": ["scoreboard player add #%n% _logic_routine_load 1"
+  ,"execute if score #%n% _logic_routine_load matches %max% run scoreboard player set #%n% _logic_routine_load 0"]
+
+
+}
+
+
+
+
+
+
+
+

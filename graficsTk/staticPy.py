@@ -50,7 +50,7 @@ class Settings:
         return False
 
 
-Seti = Settings("../settings.json")
+Seti = Settings("../#settings.json")
 mode = Seti.get("mode")
 
 

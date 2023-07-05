@@ -5,7 +5,7 @@ import re
 import shutil
 import time
 
-import templade, exeptions_
+import exeptions_
 import json
 
 from minedashbin import variableHandler_core
@@ -90,7 +90,7 @@ hasch = ["#", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "
 
 from sys import argv
 
-Seti = Settings("settings.json")
+Seti = Settings("#settings.json")
 
 
 def create_project(name=None,sourcefile=None,outputfile=None,sccrete=False):
@@ -306,7 +306,7 @@ def checkIfCharValid(str, list):
 def creComp(optype, payload, requires=None):
     return {"op": optype, "payload": payload, "requires": requires}
 
-
+import tick_load_processor
 class NewParser:
     def __init__(self, name="this."):
         self.name = name
@@ -600,6 +600,7 @@ class NewParser:
     def createBlockInclude(self):
         l = []
         na = []
+        extentions=[]
         for a in [] + (self.funcs["main"]):
             # #print("cw",self.funcs["main"])
             # #print(">>>",a)
@@ -620,21 +621,28 @@ class NewParser:
                 self.funcs["main"].remove(a)
 
                 self.blocks["ms-com-version"] += [a.split(" ")[-1]]
+            elif a.startswith("ext"):
+                dprint("found extention",a)
+
+                self.funcs["main"].remove(a)
+                extentions+=[a.split(" ",1)[-1]]
+
+
 
             elif a.startswith("#rule"):
 
                 self.funcs["main"].remove(a)
                 s=a.split(" ")
-                self.blocks["rules"][s[1]]=s[2]
+                extentions+=[s[2]]
 
             elif a.lower().startswith("@on-tick"):
-                self.tick_SCEDUE += [a.split(" ")[-1]]
+                self.tick_SCEDUE += [a.split(" ",1)[-1]]
                 self.funcs["main"].remove(a)
             elif a.lower().startswith("@on-load"):
                 self.load_SCEDUE+=[a.split(" ")[-1]]
                 self.funcs["main"].remove(a)
 
-        return l, na
+        return l, na,extentions
 
     def functionexecutionBlock(self):
 
@@ -673,7 +681,14 @@ class NewParser:
 
             argsC, argsN = self.func_takes[key]
             key = key.replace("this.", "")
-            b += templade.getFuncTemplate(key, argsC, argsN.split(","))
+
+            def getFuncTemplate(name, count, args):
+                argsS = ""
+                for a in args:
+                    argsS += a + " "
+
+                return f"# {name} {count} {argsS}\n"
+            b += getFuncTemplate(key, argsC, argsN.split(","))
             fc = "scoreboard objectives add _mdb_" + key + " dummy\n"
             if not argsN.replace(" ","")=="":
 
@@ -707,13 +722,27 @@ class NewParser:
             shutil.copyfile("templates/pack.mcmeta", projectout+"/" + projectName + "/pack.mcmeta")
 
 
-        tick_scedue=[]
-        for e in self.tick_SCEDUE:
+        tick_lines=[]
+        for n,e in enumerate(self.tick_SCEDUE):
 
-            if not "this."+e in self.funcs.keys():
-                exeptions_.throwError.functionforseduenotdefined(e,"tick")
-            else:
-                tick_scedue+=[projectName+":_mbd_"+e+"_"]
+            def checkIfFunctionExists(name):
+                if (not "this." + name in self.funcs.keys()) :
+                    if (not name in requires):
+                        exeptions_.throwError.functionforseduenotdefined(name, "tick")
+                    return name
+                return "_mbd_"+name
+
+
+
+            c=tick_load_processor.processFuncString(e,n,checkIfFunctionExists)
+            tick_lines+=c["tick-section"]
+            self.functionVariableScoreboards+=c["preset"]
+
+        with open(pathscedue + "/tick.json", "w") as f:
+            json.dump({"values": [projectName+":_#mbd_tickorder_"]}, f)
+        with open(pathfunc + "/_#mbd_tickorder_.mcfunction", "w") as f:
+            for line in tick_lines:
+                f.write(line+"\n")
 
         load_scedue=[projectName+":_mbd_main_",projectName+":_mbd_scoreboards"]
         for e in self.load_SCEDUE:
@@ -722,8 +751,7 @@ class NewParser:
             else:
                 load_scedue+=[projectName+":_mbd_"+e+"_"]
 
-        with open(pathscedue+"/tick.json","w") as f:
-            json.dump({"values":tick_scedue},f)
+
 
         with open(pathscedue+"/load.json","w") as f:
             json.dump({"values":load_scedue},f)
@@ -779,6 +807,7 @@ class NewParser:
                 shutil.copyfile(p + ".mcfunction", pathfunc + "/" + filep.split("/")[-1] + ".mcfunction")
             else:
                 exeptions_.throwError.nativeModulerNotFound(filep)
+        print("Saved to ",projectout)
 
     def identify_ops(self):
         nextOPConditon = None
@@ -822,9 +851,14 @@ class NewParser:
                     ##print(f"{Slist[0]} is a function")
                     args = ""
                     pi = 1
+
+
                     sl = lineList[li + pi]
 
+
+
                     while sl != ")":
+
                         sl = lineList[li + pi]
                         args += sl + " "
                         pi += 1
@@ -1239,6 +1273,7 @@ def compile(silentEx=False):
     global includes,requires,minecraft_commands
     includes = []
     requires = []
+    extentions=[]
 
     start_time = time.time()
     try:
@@ -1260,11 +1295,12 @@ def compile(silentEx=False):
             p.parse()
             # p.wr()
             p.toCode()
-            includesNew, requiresNew = p.createBlockInclude()
+            includesNew, requiresNew,extentionsnew = p.createBlockInclude()
 
             if (includesNew == includes) and (requiresNew == requires):
                 break
             includes, requires = includesNew, requiresNew
+            extentions=extentionsnew
         comset="--newest"
         print(p.id_to_line_translationLayer)
         higest=0.0
@@ -1284,6 +1320,7 @@ def compile(silentEx=False):
         p.initializeCompileReferenceKeywords()
         p.declerationfileSerch()
         p.creteFuncVaribleBlock()
+        print("-u EXTENSIONS => ", extentions)
         print("Analyzing-Operations...")
         p.identify_ops()
         print("Generating-Functions...")
@@ -1297,7 +1334,7 @@ def compile(silentEx=False):
         p.createFile(requires, includes)
 
         end_time = time.time()
-        print("Finished after", round(end_time - start_time, 6) * 1000, "ms")
+        print("Finished after", round(end_time - start_time, 6) * 10000, "ms")
         e = time.time()
         time.sleep(0.001)
         a,b=str(round(end_time - start_time, 6) * 1000).split(".",1)
@@ -1316,3 +1353,4 @@ if "--edit" in argv:
 
 
 compile()
+

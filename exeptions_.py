@@ -128,4 +128,10 @@ class throwError:
         ex(f"Err (C:023): No Comment version '{file}' installed   ")
         pass
 
+    @staticmethod
+    def typeOverwriteError(var):
+        ex(f"Err (C:024): typeOverwriteError '{var}' of type var can't be assigned to type function   ")
+        pass
+
+
 

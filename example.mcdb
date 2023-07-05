@@ -1,16 +1,22 @@
 //testfile 23
 #version 19.4;
 cc minebase;
+include pointer/pointer;
+native logarithmic;
+@on-tick test2 => logarithmic;
 
+@on-tick empty => loader;
+ext stinglib/pasta;
 p=1;
 tz=2;
 include pointer/pointer;
 include shr/ifs;
 setblock 1 1 1 dirt;
 lambdaA=12;
+func test2(){
+t=1;
+}
 func empty(){
-
-
     test=3;
     prout test;
     clock=20;
@@ -20,9 +26,8 @@ func empty(){
     log34=5*(3*3);
     prout log34;
 }
-
-
-
+func loader(){
+}
 
 
 

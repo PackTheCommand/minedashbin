@@ -2,9 +2,16 @@
 native pointer/spawn_pointer;
 native pointer/tppointer;
 run spawn_pointer;
-
+shr pointer "@e[tag=_mdb_pointer,limit=1,sort=nearest]";
 func movepointer(x,y,z){
   run tppointer;
   p=1;
+
+}
+func spawn_pointer(x,y,z){
+    movepointer.x=x;
+    movepointer.y=y;
+    movepointer.z=z;
+
 
 }
