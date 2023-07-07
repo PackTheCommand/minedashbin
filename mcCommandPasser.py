@@ -92,7 +92,7 @@ def parse(lines:[str]):
 
         errors+= [allE]
 
-    print("errors",errors)
+    #print("errors",errors)
     return errors
 
 

@@ -4,11 +4,11 @@ import random
 import re
 import shutil
 import time
-
+import ui_classes as setupUi
 import exeptions_
 import json
 
-from minedashbin import variableHandler_core
+from minedashbin import variable_operation_processor, extention_handler
 
 devMode=False
 
@@ -151,7 +151,7 @@ def getIfinstructParts(string: str) -> tuple[list[str, str, str], list[str, str]
 
     return (fl, types)
 skipSave=False
-import setupUi
+import ui_classes
 if len(argv) >= 2:
     if "--new" in argv:
         create_project()
@@ -178,7 +178,7 @@ if len(argv) >= 2:
         exit(0)"""
 
 if Seti.get("All-Projects") == {}:
-    print("Error:", "No project found, specify a project with '--new'")
+    print("Error:", "No project found, specify a project with '--new' or '--setup-ui'")
     exit()
 
 dprint("project",Seti.get("All-Projects"),Seti.get("Current-Project"))
@@ -306,7 +306,7 @@ def checkIfCharValid(str, list):
 def creComp(optype, payload, requires=None):
     return {"op": optype, "payload": payload, "requires": requires}
 
-import tick_load_processor
+import tick_routine_processor
 class NewParser:
     def __init__(self, name="this."):
         self.name = name
@@ -1168,8 +1168,9 @@ class NewParser:
 
                             l = ""
                     # print(l)"""
-                    f=variableHandler_core.functify_aquasion(ls2[0],ls2[1],filename,prefix)  # todo : Get funtion for var
-                    formatedLines += variableHandler_core.scoreTable + "\n"
+                    
+                    f=variable_operation_processor.functify_aquasion(ls2[0],ls2[1],filename,prefix)  # todo : Get funtion for var
+                    formatedLines += variable_operation_processor.scoreTable + "\n"
                 elif opX == "@inj":
 
                     formatedLines += prefix + self.removeStringIdentifier(line[6:]) + "\n"
@@ -1180,7 +1181,7 @@ class NewParser:
                     formatedLines += prefix + line + "\n"
                 elif opX=="@pr_out":
                     lsp=line.split(" ",2)
-                    formatedLines+= prefix + variableHandler_core.pr_outVar(lsp[0].replace("this.", ""), lsp[2].replace("this.", ""))
+                    formatedLines+= prefix + variable_operation_processor.pr_outVar(lsp[0].replace("this.", ""), lsp[2].replace("this.", ""))
                 elif opX == "@cc-inj":
                     formatedLines += prefix + line + "\n"
 
@@ -1317,19 +1318,31 @@ def compile(silentEx=False):
 
         print("Compiling-Started...")
         p.createFuncBlock()
+        extention_handler.cache_extentions(extentions, comset, p)
+
+        extention_handler.execute_extentions("pre-kww-analysis",p)
         p.initializeCompileReferenceKeywords()
+
         p.declerationfileSerch()
+
         p.creteFuncVaribleBlock()
         print("-u EXTENSIONS => ", extentions)
         print("Analyzing-Operations...")
+        extention_handler.execute_extentions("pre-op-identific", p)
+
         p.identify_ops()
         print("Generating-Functions...")
+        extention_handler.execute_extentions("pre-func-grouping", p)
+
         p.functionexecutionBlock()
+        extention_handler.execute_extentions("pre-mine-formatting", p)
 
         """for key in paser_keywords_corespontents.keys():
             parserCCCBeginWords+=paser_keywords_corespontents[key].split(" ")[0]"""
         print("Converting to mcfunction format...")
+
         p.Variabels_mine_format()
+        extention_handler.execute_extentions("post-processing", p)
         print("Saving to file...")
         p.createFile(requires, includes)
 

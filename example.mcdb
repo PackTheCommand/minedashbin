@@ -6,12 +6,14 @@ native logarithmic;
 @on-tick test2 => logarithmic;
 
 @on-tick empty => loader;
-ext stinglib/pasta;
+ext loof;
 p=1;
 tz=2;
 include pointer/pointer;
 include shr/ifs;
 setblock 1 1 1 dirt;
+
+
 lambdaA=12;
 func test2(){
 t=1;
@@ -28,6 +30,8 @@ func empty(){
 }
 func loader(){
 }
+
+
 
 
 

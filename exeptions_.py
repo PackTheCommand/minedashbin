@@ -125,7 +125,7 @@ class throwError:
 
     @staticmethod
     def comversionNotInstaled(file):
-        ex(f"Err (C:023): No Comment version '{file}' installed   ")
+        ex(f"Err (C:023): No commandset for version '{file}' installed ")
         pass
 
     @staticmethod
