@@ -328,19 +328,21 @@ class NewParser:
         self.str_func_def_block = ""
         self.special_ops_files = []
         self.text = ""
-        self.blocks = {"_include": [], "_jumper": "", "_funcvar": [], "_allVars": {},"ms-com-version":[],"rules":{}}
+        self.blocks = {"_include": [], "_jumper": "", "_funcvar": [], "_allVars": {},"ms-com-version":[],"rules":{},"cutouts": {
+        }}
 
         # self.section= {}
 
     def load(self, file=""):
         if file == "":
             with open(self.file, "r") as f:
-                self.text += f.read().replace("  ", "")
+                self.text += f.read()
         else:
             with open(file, "r") as f:
-                self.text += f.read().replace("  ", "")
+                self.text += f.read()
 
     def parse(self):
+        cutout_counter=0
 
         insideString = False
         escaped = False
@@ -349,16 +351,78 @@ class NewParser:
         lineNum = 1
         afterEQUALS=False
         inComment = False
+        cutout_def_counter=0
+        in_cutout = False
+        cutoutName=""
+        cutout_content=""
         stringOpendInLine = 0
+        lastchar =""
 
         for charNr, char in enumerate(self.text):
 
             tree = self.getPoint()
-            if char not in [" ", "\n"]:
+
+
+            if char == "\n":
+
+                lineNum += 1
+
+
+            if ((not inComment) &(not insideString) & (not afterEQUALS)&(not escaped)&(not in_cutout)):
+
+                if (char=="*")&(lastchar=="*"):
+
+
+                    dprint(" Start cutout")
+                    cutout_content=""
+                    in_cutout=True
+
+                    cutoutName=f"$lumaxS!{cutout_counter}"
+                    cutout_counter+=1
+                    lastchar=""
+                    continue
+
+                else:
+                    cutout_def_counter = 0
+            else:
+                cutout_def_counter=0#
+
+
+            if in_cutout:
+                cutout_content+=char
+                dprint("/A"+ f"{cutout_def_counter}",char,lastchar)
+                if (char=="*")&(lastchar=="*"):
+                    print(cutout_content)
+
+
+
+                    in_cutout=False
+                    self.section = self.section[:-1]
+                    self.section+="inject <"+cutoutName+">;"
+                    self.blocks["cutouts"][cutoutName]=cutout_content
+                    dprint(" End cutout" ,cutoutName, charNr)
+                    lastchar=" "
+
+
+                    char=" "
+
+                    linehasSimicolon=True
+                if char not in [" ", "\n"]:
+                    lastchar = char
+                continue
+
+
+
+
+            if char not in [ "\n"]:
                 lastchar = char
+
+
             if char=="\n":
                 self.id_to_line_translationLayer[0]+=[(charNr,)]
                 afterEQUALS=False
+
+
 
             if (char != " ") & (char != "\n") & (char not in ["{", "}", "[", "]", ";"]):
                 lineisEmpty = False
@@ -390,7 +454,7 @@ class NewParser:
 
             if char == "\n":
 
-                lineNum += 1
+
                 if inComment:
                     dprint("LEntered comment")
 
@@ -470,6 +534,8 @@ class NewParser:
             e = self.form[i]
             if e.startswith("func"):
                 s = e.split(" ")
+
+                print(s)
                 funcName = self.name + s[1]
                 ##print("nfn", funcName)
                 self.funcs[funcName] = []
@@ -484,6 +550,7 @@ class NewParser:
 
                 if nextagon == "FUNC-BLOCK":
                     pi = i
+                    print("dcsad")
                     if enter:
                         sc = ""
                         between = []
@@ -504,7 +571,7 @@ class NewParser:
                             try:
                                 sc = self.form[pi][0]  # sc is a char , pi is a string
                             except IndexError:
-                                exeptions_.throwError.BrackedNeverClosed(i)
+                                exeptions_.throwError.BrackedNeverClosed(str(i))
 
                         i = pi + 1
                         between.pop(0)
@@ -514,6 +581,7 @@ class NewParser:
                         nextagon = "n"
 
                     else:
+
                         NoLeave += "0"
 
                     pass
@@ -734,7 +802,7 @@ class NewParser:
 
 
 
-            c=tick_load_processor.processFuncString(e,n,checkIfFunctionExists)
+            c=tick_routine_processor.processFuncString(e,n,checkIfFunctionExists)
             tick_lines+=c["tick-section"]
             self.functionVariableScoreboards+=c["preset"]
 
@@ -842,9 +910,11 @@ class NewParser:
                 li += 1
 
                 string = self.funcs[key][li]
+                string =string.replace("  ","")
 
                 fs = re.sub("\s\s+", " ", string)
                 # print("<<<",fs)
+
                 Slist = re.split(",|=| ", fs)
 
                 if "this." + Slist[0] in self.funcs.keys():
@@ -1317,6 +1387,7 @@ def compile(silentEx=False):
         print(f"// using Comversion {higest}, ({comset})")
 
         print("Compiling-Started...")
+        extention_handler.execute_extentions("after-brackify", p)
         p.createFuncBlock()
         extention_handler.cache_extentions(extentions, comset, p)
 
@@ -1342,7 +1413,7 @@ def compile(silentEx=False):
         print("Converting to mcfunction format...")
 
         p.Variabels_mine_format()
-        extention_handler.execute_extentions("post-processing", p)
+        extention_handler.execute_extentions("pre-saving", p)
         print("Saving to file...")
         p.createFile(requires, includes)
 

@@ -2,9 +2,14 @@ import json
 import os
 import sys
 
-cache={"pre-kww-analysis":[],"pre-op-identific":[],"pre-func-grouping":[],"pre-mine-formatting":[],"post-processing":[]}
+from minedashbin import exeptions_
+
+funcNames={"after-brackify":"service_brackify","pre-kww-analysis":"service_kww_analysis","pre-op-identific":"service_op_analysis","pre-func-grouping":"service_func_group","pre-mine-formatting":"service_mine_format","pre-saving":"service_pre_saving",}
+cache={"after-brackify":[],"pre-kww-analysis":[],"pre-op-identific":[],"pre-func-grouping":[],"pre-mine-formatting":[],"pre-saving":[]}
 def cache_extentions(extentions:list,com_version,paser):
     for ext in extentions:
+        if not os.path.exists("extentions/"+ext+"/.spec"):
+            exeptions_.ex("extention not found: "+ext)
 
         with open("extentions/"+ext+"/.spec") as f:
             metadata=json.load(f)
@@ -24,16 +29,18 @@ def cache_extentions(extentions:list,com_version,paser):
 
 
 
-
-        if metadata["hook-point"] in cache.keys():
-           cache[metadata["hook-point"]]+=[imp]
-        else:
-            print("Unrecognized processing step")
+        for testkey in metadata["hook-points"]:
+            if testkey in cache.keys():
+                cache[testkey]+=[imp]
+            else:
+                print("Unrecognized processing step: ",testkey)
 
 
 def execute_extentions(step,paser):
     for ext in cache[step]:
-        ext.service(paser)
+        try:
+            exec("ext."+funcNames[step]+"(paser)")
+        except EOFError: exeptions_.ex(f"Extention '{ext.__name__}' doesn't provide service for event '{step}' \u001b[37m")
 
 
-cache_extentions(["loof"],"19.4",None)
+

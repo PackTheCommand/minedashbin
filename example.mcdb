@@ -3,10 +3,10 @@
 cc minebase;
 include pointer/pointer;
 native logarithmic;
-@on-tick test2 => logarithmic;
 
-@on-tick empty => loader;
-ext loof;
+
+
+ext pythonic;
 p=1;
 tz=2;
 include pointer/pointer;
@@ -18,19 +18,15 @@ lambdaA=12;
 func test2(){
 t=1;
 }
+
+**
+for i in range(1,23):
+    ins('say '+"log"+str(i))
+**
+
 func empty(){
-    test=3;
-    prout test;
-    clock=20;
 
-    prout clock;
-    logon=3*test;
-    log34=5*(3*3);
-    prout log34;
 }
-func loader(){
-}
-
 
 
 

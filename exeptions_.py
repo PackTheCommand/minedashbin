@@ -7,7 +7,7 @@ def disableExit():
     disableEx=True
 def ex(errc):
     global exeptionreson
-    print(errc)
+    print(u"\u001b[31m%s"% ((errc)))
     exeptionreson=errc
     if not disableEx:
         exit(404)
