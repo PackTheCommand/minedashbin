@@ -397,8 +397,11 @@ class NewParser:
 
 
                     in_cutout=False
+
                     self.section = self.section[:-1]
-                    self.section+="inject <"+cutoutName+">;"
+                    self.section+="inject <"+cutoutName+">"
+                    self.form += [self.section]
+                    self.section=""
                     self.blocks["cutouts"][cutoutName]=cutout_content
                     dprint(" End cutout" ,cutoutName, charNr)
                     lastchar=" "

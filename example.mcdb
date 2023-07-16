@@ -1,8 +1,6 @@
 //testfile 23
 #version 19.4;
 cc minebase;
-include pointer/pointer;
-native logarithmic;
 
 
 
@@ -13,19 +11,20 @@ include pointer/pointer;
 include shr/ifs;
 setblock 1 1 1 dirt;
 
-
 lambdaA=12;
-func test2(){
+func test2(test){
 t=1;
 }
 
+
+
+func empty(){
+top=12;
 **
 for i in range(1,23):
     ins('say '+"log"+str(i))
 **
-
-func empty(){
-
+test=12;
 }
 
 
