@@ -2,16 +2,16 @@ import json
 import os
 import sys
 
-from minedashbin import exeptions_
+import exeptions_
 
 funcNames={"after-brackify":"service_brackify","pre-kww-analysis":"service_kww_analysis","pre-op-identific":"service_op_analysis","pre-func-grouping":"service_func_group","pre-mine-formatting":"service_mine_format","pre-saving":"service_pre_saving",}
 cache={"after-brackify":[],"pre-kww-analysis":[],"pre-op-identific":[],"pre-func-grouping":[],"pre-mine-formatting":[],"pre-saving":[]}
 def cache_extentions(extentions:list,com_version,paser):
     for ext in extentions:
-        if not os.path.exists("extentions/"+ext+"/.spec"):
+        if not os.path.exists("extentions/"+ext+"/.ext"):
             exeptions_.ex("extention not found: "+ext)
 
-        with open("extentions/"+ext+"/.spec") as f:
+        with open("extentions/"+ext+"/.ext") as f:
             metadata=json.load(f)
 
 
