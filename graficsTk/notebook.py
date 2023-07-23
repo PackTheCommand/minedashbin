@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import Frame, Label
 
-from minedashbin.graficsTk import Collor, createLabel1
+from graficsTk import Collor, createLabel1
 
 
 class swithchFrame(Frame):
