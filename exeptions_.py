@@ -1,5 +1,5 @@
 
-
+paser=None
 disableEx=False
 exeptionreson=""
 def disableExit():
@@ -7,8 +7,14 @@ def disableExit():
     disableEx=True
 def ex(errc):
     global exeptionreson
-    print(u"\u001b[31m%s"% ((errc)))
-    exeptionreson=errc
+
+    print(u"\u001b[31m%s"% ((errc)),)
+    if(paser.tracker_line!=""):
+        print(u"\u001b[34m//file:%s l: %i"% (paser.tracker_file,int(paser.tracker_line)+1),)
+    else:
+        print(u"\u001b[34m//file:%s l: %s" % (paser.tracker_file, "Unknown"))
+
+        exeptionreson=errc
     if not disableEx:
         exit(404)
     raise Exception("Compilation Failed")
@@ -28,7 +34,7 @@ class throwError:
 
     @staticmethod
     def unableToUnderstandInstrucktion(op, l):
-        ex(f"Err (C:002): Unknown Instruction '{op}' [Compiler-fails] in line " + str(l))
+        ex(f"Err (C:002): Unknown Instruction '{op}' [Compiler-fails]  ")
 
 
     @staticmethod
@@ -48,7 +54,7 @@ class throwError:
 
     @staticmethod
     def parameterLimitReched(l):
-        ex("Err (C:006): ParameterLimitRecheched in line " + str(l) + " not more than 9999 parameters are alowed")
+        ex("Err (C:006): ParameterLimitRecheched not more than 9999 parameters are alowed")
 
 
     @staticmethod
@@ -58,7 +64,7 @@ class throwError:
 
     @staticmethod
     def ccFileError(addI, file):
-        ex("Err (C:008): CCFileError triing to load " + str(file) + " " + addI)
+        ex("Err (C:008): CCFileError trying to load " + str(file) + " " + addI)
 
 
     @staticmethod

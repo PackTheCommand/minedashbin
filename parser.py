@@ -8,7 +8,7 @@ import ui_classes as setupUi
 import exeptions_
 import json
 
-from minedashbin import variable_operation_processor, extention_handler
+import variable_operation_processor, extention_handler
 
 devMode=False
 
@@ -309,6 +309,8 @@ def creComp(optype, payload, requires=None):
 import tick_routine_processor
 class NewParser:
     def __init__(self, name="this."):
+        self.tracker_line = ""
+        self.tracker_file = ""
         self.name = name
         self.tick_SCEDUE = []
         self.load_SCEDUE = []
@@ -336,10 +338,19 @@ class NewParser:
     def load(self, file=""):
         if file == "":
             with open(self.file, "r") as f:
-                self.text += f.read()
+                finall=""
+                for n,line in enumerate(f.read().split("\n")):
+                    finall+=f"@LIT {n};\n"+line+"\n"
+
+
+
+                self.text += f"@FST "+self.file[::-1].split('\\',1)[-1][::-1]+";"+finall
         else:
             with open(file, "r") as f:
-                self.text += f.read()
+                finall = ""
+                for n, line in enumerate(f.read().split("\n")):
+                    finall += f"@LIT {n};\n" + line + "\n"
+                self.text += f"@FST "+file[::-1].split('\\',1)[-1][::-1]+";"+finall
 
     def parse(self):
         cutout_counter=0
@@ -958,6 +969,15 @@ class NewParser:
                 elif (Slist[0] in minecraft_commands):
 
                     newList += [newComp("@nai", lineList[li])]
+                elif Slist[0].startswith("@FST"):
+                    print(Slist[1])
+                    self.tracker_file=Slist[1]
+                    newList += [newComp("@tracker", lineList[li])]
+                elif Slist[0].startswith("@LIT"):
+                    print(Slist[1])
+                    self.tracker_line=Slist[1]
+                    newList += [newComp("@tr-l", Slist[1])]
+
                 elif Slist[0].startswith("#if"):
                     nextOPConditon = lineList[li]
                     continue
@@ -1252,6 +1272,10 @@ class NewParser:
                     formatedLines += prefix + (self.removeStringIdentifier(line)) + "\n"
                 elif opX == "@nai":
                     formatedLines += prefix + line + "\n"
+                elif opX == "@tr-l":
+                    self.tracker_line=line
+                elif opX=="@tracker":
+                    self.tracker_file=line.split(" ",1)[-1]
                 elif opX=="@pr_out":
                     lsp=line.split(" ",2)
                     formatedLines+= prefix + variable_operation_processor.pr_outVar(lsp[0].replace("this.", ""), lsp[2].replace("this.", ""))
@@ -1356,6 +1380,7 @@ def compile(silentEx=False):
         while True:
 
             p = NewParser()
+            exeptions_.paser=p
             p.load()
             for incl in includes:
 
