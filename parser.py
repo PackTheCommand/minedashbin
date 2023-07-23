@@ -1388,6 +1388,8 @@ def compile(silentEx=False):
                     p.load(incl + ".mcdb")
                 elif os.path.exists("templates/baselib/" + incl + ".mcdb"):
                     p.load("templates/baselib/" + incl + ".mcdb")
+                elif os.path.exists("templates/modules/" + incl + ".mcdb"):
+                    p.load("templates/modules/" + incl + ".mcdb")
                 else:
                     exeptions_.throwError.ModuleNotFound(incl)
 
