@@ -15,7 +15,7 @@ import _tkinter
 from graficsTk import *
 import tkinter.filedialog as fd
 
-from minedashbin.graficsTk.fileEditor import FileTree
+from graficsTk.fileEditor import FileTree
 
 
 def round_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
