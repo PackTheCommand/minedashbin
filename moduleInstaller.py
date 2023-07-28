@@ -49,7 +49,7 @@ def unzip(path,uid):
 
             for file in zObject.namelist():
                 if file.startswith(uid+'/'):
-                    zObject.extract(file, path="templades\\modules\\")
+                    zObject.extract(file, path="templates\\modules\\")
 
 
         else:
@@ -90,9 +90,9 @@ def Uninstall(uid):
             if i["uid"]==uid:
                 index["module"].pop(n)
                 try:
-                    delete_all_files_in_directory("templades\\modules\\"+uid)
+                    delete_all_files_in_directory("templates\\modules\\"+uid)
 
-                    os.remove("templades\\modules\\"+uid)
+                    os.remove("templates\\modules\\"+uid)
                 except FileNotFoundError:
                     pass
                 except PermissionError:
